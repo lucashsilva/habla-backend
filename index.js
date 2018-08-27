@@ -1,13 +1,25 @@
 const express = require("express");
 const postsController = require("./controllers/posts");
 const app = express();
+var bodyParser = require('body-parser')
+const mongoose = require('mongoose');
 
-const router = express.Router();
+mongoose.connect('mongodb://localhost/habla').then(() => {
+    console.log("Database connection successful.");
 
-router.use("/posts", postsController);
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use("/api", router);
+    const router = express.Router();
 
-app.listen(3000, () => {
-    console.log("Listening on port 3000.");
+    router.use("/posts", postsController);
+
+    app.use("/api", router);
+
+    app.listen(3000, () => {
+        console.log("Listening on port 3000.");
+    });
+}).catch((err) => {
+    console.warn("Failed connecting to database.");
+    console.log(err);
 });
