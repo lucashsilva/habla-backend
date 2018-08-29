@@ -5,8 +5,10 @@ router = express.Router();
 
 router.get("/", async(req, res) => {
     try {
-        res.send(await Post.find());
+        console.log(req.query)
+        res.send(await Post.findNear([parseFloat(req.query.lat), parseFloat(req.query.lon)], parseFloat(req.query.maxDistance)));
     } catch (err) {
+        console.log(err);
         res.status(500).end();
     }
 });
