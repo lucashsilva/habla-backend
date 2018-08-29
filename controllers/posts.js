@@ -17,6 +17,25 @@ router.get("/", async(req, res) => {
     }
 });
 
+router.get("/:id", async(req, res) => {
+    if (req.params.id) {
+        try {
+            const post = await Post.findById({ _id: req.params.id }).exec();
+
+            if (post) {
+                res.send(post);
+            } else {
+                res.status(404).end();
+            }
+            res.send();
+        } catch (error) {
+            console.log(error);
+        }
+    } else {
+        res.status(400).send({ message: "Missing post id." });
+    }
+});
+
 router.post("/", async(req, res) => {
     const post = new Post(req.body);
     
@@ -26,6 +45,16 @@ router.post("/", async(req, res) => {
         res.send(post);
     } catch (err) {
         res.status(500).end();
+    }
+});
+
+router.delete("/:id", async(req, res) => {
+    try {
+        await Post.deleteOne({ _id: req.params.id }).exec();
+        res.status(200).end();
+    } catch (error) {
+        console.log(error);
+        res.status(400).end();
     }
 });
 
