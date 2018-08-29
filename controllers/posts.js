@@ -4,8 +4,12 @@ const Post = require('../models/post');
 router = express.Router();
 
 router.get("/", async(req, res) => {
+    if (!(req.query.lat && req.query.lon && req.query.maxDistance)) {
+        res.status(400).send({ message: 'Params lat, lon and maxDistance are required.' });
+        return;
+    }
+
     try {
-        console.log(req.query)
         res.send(await Post.findNear([parseFloat(req.query.lat), parseFloat(req.query.lon)], parseFloat(req.query.maxDistance)));
     } catch (err) {
         console.log(err);
