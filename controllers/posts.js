@@ -48,6 +48,20 @@ router.post("/", async(req, res) => {
     }
 });
 
+router.put("/:id", async(req,res) => {
+    if (req.params.id) {
+        try {
+            let post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true }).exec();
+
+            res.send(post);
+        } catch (error) {
+            console.log(error);
+        }
+    } else {
+        res.status(400).send({ message: "Missing post id." });
+    }
+});
+
 router.delete("/:id", async(req, res) => {
     try {
         await Post.deleteOne({ _id: req.params.id }).exec();
