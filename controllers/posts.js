@@ -27,9 +27,10 @@ router.get("/:id", async(req, res) => {
             } else {
                 res.status(404).end();
             }
+
             res.send();
         } catch (error) {
-            console.log(error);
+            res.staus(500).end();
         }
     } else {
         res.status(400).send({ message: "Missing post id." });
@@ -53,8 +54,13 @@ router.put("/:id", async(req,res) => {
         try {
             let post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true }).exec();
 
-            res.send(post);
+            if (post) {
+                res.send(post);
+            } else {
+                res.status(404).end();
+            }
         } catch (error) {
+            res.status(500).end();
             console.log(error);
         }
     } else {
