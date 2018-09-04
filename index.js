@@ -12,23 +12,25 @@ const logger = morgan('combined', { stream: accessLogStream });
 
 mongoose.connect('mongodb://localhost/habla').then(() => {
     console.log("Database connection successful.");
-
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: false }));
-    app.use(logger);
-
-    const router = express.Router();
-
-    router.use("/posts", postsController);
-
-    app.use("/api", router);
-
-    app.use('/static', express.static('static'));
-
-    app.listen(3000, () => {
-        console.log("Listening on port 3000.");
-    });
 }).catch((err) => {
     console.warn("Failed connecting to database.");
     console.log(err);
 });
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(logger);
+
+const router = express.Router();
+
+router.use("/posts", postsController);
+
+app.use("/api", router);
+
+app.use('/static', express.static('static'));
+
+app.listen(3000, () => {
+    console.log("Listening on port 3000.");
+});
+
+module.exports = app;
