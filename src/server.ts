@@ -24,6 +24,8 @@ const server = new InversifyExpressServer(container, null, { rootPath: "/api" },
 
 server.setConfig((app) => {
     // config for express
+    app.use(logger);
+    
     app.use(bodyParser.urlencoded({
         extended: true
     }));
