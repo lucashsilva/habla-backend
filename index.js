@@ -10,6 +10,8 @@ const path = require('path');
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
 
+const PORT = process.env.PORT || 3000;
+
 mongoose.connect('mongodb://localhost/habla').then(() => {
     console.log("Database connection successful.");
 }).catch((err) => {
@@ -29,8 +31,8 @@ app.use("/api", router);
 
 app.use('/static', express.static('static'));
 
-app.listen(3000, () => {
-    console.log("Listening on port 3000.");
+app.listen(PORT, () => {
+    console.log(`Listening on port ${PORT}.`);
 });
 
 module.exports = app;
