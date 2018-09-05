@@ -20,17 +20,16 @@ router.get("/", async(req, res) => {
 router.get("/:id", async(req, res) => {
     if (req.params.id) {
         try {
-            const post = await Post.findById({ _id: req.params.id }).exec();
+            const post = await Post.findById(req.params.id).exec();
 
             if (post) {
                 res.send(post);
             } else {
                 res.status(404).end();
             }
-
-            res.send();
         } catch (error) {
-            res.staus(500).end();
+            console.log(error);
+            res.status(500).end();
         }
     } else {
         res.status(400).send({ message: "Missing post id." });
