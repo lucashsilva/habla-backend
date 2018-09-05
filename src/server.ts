@@ -4,13 +4,23 @@ import "reflect-metadata";
 import { Container } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { PostController } from './controllers/post';
+import { DatabaseService } from './services/database';
+import * as morgan from 'morgan';
+import * as fs from 'fs';
+import * as path from 'path';
 
-let container = new Container();
+const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
+const logger = morgan('combined', { stream: accessLogStream });
+
+const PORT = process.env.PORT || 3000;
+
+const container = new Container();
 
 container.bind(PostController);
+container.bind<DatabaseService>(DatabaseService).to(DatabaseService).inSingletonScope();
 
 // create server
-let server = new InversifyExpressServer(container, null, { rootPath: "/api" }, null);
+const server = new InversifyExpressServer(container, null, { rootPath: "/api" }, null);
 
 server.setConfig((app) => {
     // config for express
@@ -21,11 +31,12 @@ server.setConfig((app) => {
     app.use(bodyParser.json());
 });
 
-let app = server.build();
+const app = server.build();
 
-// create the http server
-const httpServer = http.createServer(app);
-const port = 8080;
-httpServer.listen(port);
+container.get(DatabaseService).ready().then(() => {
+    // create the http server
+    const httpServer = http.createServer(app);
+    httpServer.listen(PORT);
 
-console.log("Listening on port " + port + ".");
+    console.log(`Listening on port ${PORT}.`);
+});
