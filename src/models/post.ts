@@ -18,9 +18,9 @@ export class Post extends BaseEntity {
     @Column({ nullable: true })
     channelId: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @CreateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
 }

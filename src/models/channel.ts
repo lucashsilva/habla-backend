@@ -15,9 +15,9 @@ export class Channel extends BaseEntity {
     // @Column({ nullable: false, type: "point" })
     // location: { x: number, y: number };
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @CreateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
 }
