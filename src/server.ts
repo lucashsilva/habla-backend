@@ -22,7 +22,7 @@ container.bind(ChannelController);
 container.bind<DatabaseService>(DatabaseService).to(DatabaseService).inSingletonScope();
 
 // create server
-const server = new InversifyExpressServer(container, null, { rootPath: "/api" }, null);
+const server = new InversifyExpressServer(container);
 
 server.setConfig((app) => {
     // config for express

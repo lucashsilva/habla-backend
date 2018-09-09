@@ -10,10 +10,9 @@ export class DatabaseService {
     constructor() {
         this.readyPromise$ = createConnection({
             type: "postgres",
-            host: process.env.DATABASE_HOST,
-            database: process.env.DATABASE_NAME,
-            username: process.env.DATABASE_USER,
-            password: process.env.DATABASE_PASSWORD,
+            username: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
             synchronize: true,
             entities: [
                 Post,
