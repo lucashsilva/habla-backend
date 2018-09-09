@@ -8,6 +8,7 @@ import { DatabaseService } from './services/database';
 import * as morgan from 'morgan';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ChannelController } from './controllers/channel';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 const container = new Container();
 
 container.bind(PostController);
+container.bind(ChannelController);
 container.bind<DatabaseService>(DatabaseService).to(DatabaseService).inSingletonScope();
 
 // create server

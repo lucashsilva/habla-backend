@@ -1,6 +1,7 @@
 import { injectable } from 'inversify';
 import { createConnection, Connection } from 'typeorm';
 import { Post } from '../models/post';
+import { Channel } from '../models/channel';
 
 @injectable()
 export class DatabaseService {
@@ -14,7 +15,8 @@ export class DatabaseService {
             password: "habla",
             synchronize: true,
             entities: [
-                Post
+                Post,
+                Channel
             ]
         });
 

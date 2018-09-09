@@ -1,13 +1,20 @@
 import * as express from "express";
 import { controller, httpGet, BaseHttpController, requestParam, httpPost, requestBody, httpDelete } from "inversify-express-utils";
 import { Post } from "../models/post";
+import { In } from "typeorm";
 
 @controller("/posts")
 export class PostController extends BaseHttpController {
     @httpGet("/")
     private async getPosts(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post[]> {
         try {
-           return await Post.find();
+            let where;
+
+            if (req.query.channelId) {
+                where = { channelId: req.query.channelId }
+            }
+            
+            return await Post.find({ where: where, relations: ['channel'], order: { 'createdAt': 'DESC' }});
         } catch (error) {
             res.status(500).end();
         }
@@ -34,6 +41,7 @@ export class PostController extends BaseHttpController {
         try {
             return await Post.create(post).save();
         } catch (error) {
+            console.log(error);
             res.status(500).end();
         }
     }

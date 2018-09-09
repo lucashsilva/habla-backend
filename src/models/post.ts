@@ -1,4 +1,5 @@
 import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Channel } from "./channel";
 
 @Entity()
 export class Post extends BaseEntity {
@@ -6,16 +7,16 @@ export class Post extends BaseEntity {
     id: number;
     
     @Column({ nullable: false })
-    title: string;
-
-    @Column({ nullable: true })
     body: string;
 
-    @Column({ nullable: false })
-    lat: number;
+    // @Column({ nullable: false, type: "point" })
+    // location: { x: number, y: number };
 
-    @Column({ nullable: false })
-    lon: number;
+    @ManyToOne(type => Channel, channel => channel.posts, { onDelete: "SET NULL" })
+    channel: Channel;
+
+    @Column({ nullable: true })
+    channelId: number;
 
     @CreateDateColumn()
     createdAt: Date;
