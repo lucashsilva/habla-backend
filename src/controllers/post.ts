@@ -14,7 +14,7 @@ export class PostController extends BaseHttpController {
                 where = { channelId: req.query.channelId }
             }
             
-            return await Post.find({ where: where, relations: ['channel'], order: { 'createdAt': 'DESC' }});
+            return await Post.find({ where: where, relations: ['owner', 'channel'], order: { 'createdAt': 'DESC' }});
         } catch (error) {
             res.status(500).end();
         }
@@ -23,7 +23,7 @@ export class PostController extends BaseHttpController {
     @httpGet("/:id")
     private async getOne(@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post> {
         try {
-            const post = await Post.findOne(id);
+            const post = await Post.findOne(id, { relations: ['owner', 'channel']});
 
             if (post) {
                 return post;
