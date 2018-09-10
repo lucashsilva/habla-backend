@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { injectable } from 'inversify';
-var serviceAccount = require("../../service-account.json");
+var serviceAccount = require("/secrets/firebase/service-account.json");
 
 @injectable()
 export class AuthenticationService {

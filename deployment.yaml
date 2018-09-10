@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: "habla"
-        image: "gcr.io/habla-215902/habla:v1.3"
+        image: "gcr.io/habla-215902/habla:v1.4"
         env:
         - name: "DB_NAME"
           valueFrom:
@@ -51,6 +51,10 @@ spec:
             secretKeyRef:
               name: cloudsql-db-credentials
               key: password
+        volumeMounts:
+          - name: firebase-service-account
+            mountPath: /secrets/firebase
+            readOnly: true
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
         command: ["/cloud_sql_proxy",
@@ -67,6 +71,9 @@ spec:
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-instance-credentials
+        - name: firebase-service-account
+          secret:
+            secretName: firebase-service-account
 ---
 apiVersion: "autoscaling/v1"
 kind: "HorizontalPodAutoscaler"
