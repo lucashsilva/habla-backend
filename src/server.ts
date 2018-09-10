@@ -9,6 +9,10 @@ import * as morgan from 'morgan';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ChannelController } from './controllers/channel';
+import { AuthorizeMiddleware } from './middlewares/authorize';
+import { AuthenticationService } from './services/authentication';
+import { AuthenticationProvider } from './providers/authentication';
+import { ProfileController } from './controllers/profile';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -17,12 +21,17 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 const container = new Container();
 
+container.bind<AuthorizeMiddleware>(AuthorizeMiddleware).to(AuthorizeMiddleware);
+
 container.bind(PostController);
 container.bind(ChannelController);
+container.bind(ProfileController);
+
 container.bind<DatabaseService>(DatabaseService).to(DatabaseService).inSingletonScope();
+container.bind<AuthenticationService>(AuthenticationService).to(AuthenticationService).inSingletonScope();
 
 // create server
-const server = new InversifyExpressServer(container);
+const server = new InversifyExpressServer(container, null, null, null, AuthenticationProvider);
 
 server.setConfig((app) => {
     // config for express

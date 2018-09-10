@@ -1,8 +1,9 @@
 import * as express from "express";
 import { controller, httpGet, BaseHttpController, requestParam, httpPost, requestBody } from "inversify-express-utils";
 import { Channel } from "../models/channel";
+import { AuthorizeMiddleware } from "../middlewares/authorize";
 
-@controller("/channels")
+@controller("/channels", AuthorizeMiddleware)
 export class ChannelController extends BaseHttpController {
     @httpGet("/")
     private async getChannels(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Channel[]> {

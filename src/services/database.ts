@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { createConnection, Connection } from 'typeorm';
 import { Post } from '../models/post';
 import { Channel } from '../models/channel';
+import { Profile } from '../models/profile';
 
 @injectable()
 export class DatabaseService {
@@ -10,13 +11,14 @@ export class DatabaseService {
     constructor() {
         this.readyPromise$ = createConnection({
             type: "postgres",
-            username: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+            username: "habla",
+            password: "habla",
+            database: "habla",
             synchronize: true,
             entities: [
                 Post,
-                Channel
+                Channel,
+                Profile
             ]
         });
 

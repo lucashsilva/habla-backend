@@ -1,5 +1,6 @@
 import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from "typeorm";
 import { Channel } from "./channel";
+import { Profile } from "./profile";
 
 @Entity()
 export class Post extends BaseEntity {
@@ -14,6 +15,12 @@ export class Post extends BaseEntity {
 
     @ManyToOne(type => Channel, channel => channel.posts, { onDelete: "SET NULL" })
     channel: Channel;
+
+    @ManyToOne(type => Profile, profile => profile.posts)
+    owner: Profile;
+
+    @Column({ nullable: true })
+    ownerUid: string;
 
     @Column({ nullable: true })
     channelId: number;
