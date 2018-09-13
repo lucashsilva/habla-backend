@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: "habla"
-        image: "gcr.io/habla-215902/habla:v1.4"
+        image: "gcr.io/habla-215902/habla:v1.4.1"
         env:
         - name: "DB_NAME"
           valueFrom:
