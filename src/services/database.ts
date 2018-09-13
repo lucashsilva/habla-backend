@@ -3,6 +3,7 @@ import { createConnection, Connection } from 'typeorm';
 import { Post } from '../models/post';
 import { Channel } from '../models/channel';
 import { Profile } from '../models/profile';
+import { Comment } from '../models/comment';
 
 @injectable()
 export class DatabaseService {
@@ -17,6 +18,7 @@ export class DatabaseService {
             synchronize: true,
             entities: [
                 Post,
+                Comment,
                 Channel,
                 Profile
             ]

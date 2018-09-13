@@ -1,6 +1,7 @@
-import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { Channel } from "./channel";
 import { Profile } from "./profile";
+import { Comment } from "./comment";
 
 @Entity()
 export class Post extends BaseEntity {
@@ -18,6 +19,9 @@ export class Post extends BaseEntity {
 
     @ManyToOne(type => Profile, profile => profile.posts)
     owner: Profile;
+
+    @OneToMany(type => Comment, comment => comment.post)
+    comments: Comment[];
 
     @Column({ nullable: true })
     ownerUid: string;

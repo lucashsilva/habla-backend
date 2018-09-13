@@ -18,7 +18,7 @@ metadata:
   labels:
     app: "habla"
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: "habla"
@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: "habla"
-        image: "gcr.io/habla-215902/habla:v1.4.1"
+        image: "gcr.io/habla-215902/habla:v0.0.1"
         env:
         - name: "DB_NAME"
           valueFrom:

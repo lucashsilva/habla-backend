@@ -13,6 +13,7 @@ import { AuthorizeMiddleware } from './middlewares/authorize';
 import { AuthenticationService } from './services/authentication';
 import { AuthenticationProvider } from './providers/authentication';
 import { ProfileController } from './controllers/profile';
+import { CommentController } from './controllers/comment';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -26,6 +27,7 @@ container.bind<AuthorizeMiddleware>(AuthorizeMiddleware).to(AuthorizeMiddleware)
 container.bind(PostController);
 container.bind(ChannelController);
 container.bind(ProfileController);
+container.bind(CommentController);
 
 container.bind<DatabaseService>(DatabaseService).to(DatabaseService).inSingletonScope();
 container.bind<AuthenticationService>(AuthenticationService).to(AuthenticationService).inSingletonScope();
