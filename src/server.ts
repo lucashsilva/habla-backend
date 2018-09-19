@@ -14,6 +14,7 @@ import { AuthenticationService } from './services/authentication';
 import { AuthenticationProvider } from './providers/authentication';
 import { ProfileController } from './controllers/profile';
 import { CommentController } from './controllers/comment';
+import * as cors from 'cors';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -44,6 +45,11 @@ server.setConfig((app) => {
     }));
     
     app.use(bodyParser.json());
+
+    app.use(cors({ 
+        origin: 'http://localhost',
+        optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+    }));
 });
 
 const app = server.build();
