@@ -2,9 +2,20 @@ import * as express from "express";
 import { controller, httpGet, BaseHttpController, requestParam, httpPost, requestBody, httpDelete } from "inversify-express-utils";
 import { Post } from "../models/post";
 import { AuthorizeMiddleware } from "../middlewares/authorize";
+import { ApiPath, ApiOperationGet, SwaggerDefinitionConstant, ApiOperationPost, ApiOperationDelete } from "swagger-express-ts";
 
+@ApiPath({
+    path: "/posts",
+    name: "Posts"
+})
 @controller("/posts", AuthorizeMiddleware)
 export class PostController extends BaseHttpController {
+    @ApiOperationGet({
+        description: "Get posts",
+        responses: {
+            200: { description: "Success", type: SwaggerDefinitionConstant.Response.Type.ARRAY, model: "Post" }
+        }
+    })
     @httpGet("/")
     private async getPosts(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post[]> {
         try {
@@ -20,6 +31,12 @@ export class PostController extends BaseHttpController {
         }
     }
 
+    @ApiOperationGet({
+        description: "Get a specific post",
+        responses: {
+            200: { description: "Success", type: "Post", model: "Post" }
+        }
+    })
     @httpGet("/:id")
     private async getOne(@requestParam("id") id: number, req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post> {
         try {
@@ -36,6 +53,12 @@ export class PostController extends BaseHttpController {
         }
     }
 
+    // @ApiOperationPost({
+    //     description: "Create a post",
+    //     responses: {
+    //         201: { description: "Created", type: "Post", model: "Post" }
+    //     }
+    // })
     @httpPost("/")
     private async create(@requestBody() post: Post, req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post> {
         try {

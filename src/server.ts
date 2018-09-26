@@ -1,4 +1,5 @@
 import * as bodyParser from 'body-parser';
+import * as swagger from 'swagger-express-ts';
 import * as http from 'http';
 import "reflect-metadata";
 import { Container } from 'inversify';
@@ -8,6 +9,7 @@ import { DatabaseService } from './services/database';
 import * as morgan from 'morgan';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as express from "express";
 import { ChannelController } from './controllers/channel';
 import { AuthorizeMiddleware } from './middlewares/authorize';
 import { AuthenticationService } from './services/authentication';
@@ -36,8 +38,20 @@ container.bind<AuthenticationService>(AuthenticationService).to(AuthenticationSe
 const server = new InversifyExpressServer(container, null, null, null, AuthenticationProvider);
 
 server.setConfig((app) => {
+    app.use('/api-docs/swagger', express.static('src/swagger'));
+    app.use('/api-docs/swagger/assets', express.static('node_modules/swagger-ui-dist'));
+
     // config for express
     app.use(logger);
+
+    app.use(swagger.express({
+        definition : {
+            info : {
+                title : "Habla API" ,
+                version : "1.0"
+            }
+        }
+    }));
     
     app.use(bodyParser.urlencoded({
         extended: true
