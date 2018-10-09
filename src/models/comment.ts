@@ -1,12 +1,18 @@
-import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from "typeorm";
 import { Profile } from "./profile";
 import { Post } from "./post";
+import { ApiModelProperty, ApiModel } from "swagger-express-ts";
 
+@ApiModel({
+  name: "Comment"
+})
 @Entity()
 export class Comment extends BaseEntity {
+    @ApiModelProperty({ required: true })
     @PrimaryGeneratedColumn()
     id: number;
     
+    @ApiModelProperty({ required: true })
     @Column({ nullable: false })
     body: string;
 
@@ -16,9 +22,11 @@ export class Comment extends BaseEntity {
     @ManyToOne(type => Post)
     post: Post;
 
-    @CreateDateColumn({ type: "timestamp with time zone"})
+    @ApiModelProperty({ required: false, type: "string" })
+    @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;
 
-    @CreateDateColumn({ type: "timestamp with time zone"})
+    @ApiModelProperty({ required: false, type: "string" })
+    @UpdateDateColumn({ type: "timestamp with time zone" })
     updatedAt: Date;
 }
