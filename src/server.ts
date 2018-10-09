@@ -50,8 +50,8 @@ server.setConfig((app) => {
             info : {
                 title : "Habla API" ,
                 version : "1.0"
-            }
-        }
+            },
+        },
     }));
     
     app.use(bodyParser.urlencoded({
