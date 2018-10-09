@@ -4,10 +4,7 @@ import { Channel } from "../models/channel";
 import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { ApiPath, ApiOperationGet, SwaggerDefinitionConstant, ApiOperationPost } from "swagger-express-ts";
 
-@ApiPath({
-    path: "/channels",
-    name: "Channels"
-})
+@ApiPath({ path: "/channels", name: "Channels" })
 @controller("/channels", AuthorizeMiddleware)
 export class ChannelController extends BaseHttpController {
     @ApiOperationGet({

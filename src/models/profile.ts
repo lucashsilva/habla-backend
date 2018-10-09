@@ -2,59 +2,36 @@ import { Column, Entity, BaseEntity, Index, OneToMany, PrimaryColumn } from "typ
 import { Post } from "./post";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
 
-@ApiModel({
-    name: "Profile"
-})
+@ApiModel({ name: "Profile" })
 @Entity()
 export class Profile extends BaseEntity {
-    @ApiModelProperty({
-        description: "User id" ,
-        required: true
-    })
+    @ApiModelProperty()
     @PrimaryColumn()
     @Index({ unique: true })
     uid: string;
 
-    @ApiModelProperty({
-        description: "Username" ,
-        required: true
-    })
+    @ApiModelProperty({ required: true })
     @Column()
     @Index({ unique: true })
     username: string;
 
-    @ApiModelProperty({
-        description: "Name",
-        required: true
-    })
+    @ApiModelProperty({ required: true })
     @Column()
     name: string;
 
-    @ApiModelProperty({
-        description: "Bio",
-        required: false
-    })
+    @ApiModelProperty()
     @Column({ nullable: true })
     bio: string;
 
-    @ApiModelProperty({
-        description: "Website",
-        required: false
-    })
+    @ApiModelProperty()
     @Column({ nullable: true }) 
     website: string;
 
-    @ApiModelProperty({
-        description: "Phone",
-        required: false
-    })
+    @ApiModelProperty()
     @Column({ nullable: true })
     phone: string;
     
-    @ApiModelProperty({
-        description: "Gender",
-        required: false
-    })
+    @ApiModelProperty()
     @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'OTHER'], nullable: true })
     gender: 'MALE' | 'FEMALE' | 'OTHER';
 

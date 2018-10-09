@@ -5,10 +5,7 @@ import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { Profile } from "../models/profile";
 import { ApiOperationGet, ApiOperationPut, ApiPath } from "swagger-express-ts";
 
-@ApiPath({
-    path: "/profiles",
-    name: "Profiles"
-})
+@ApiPath({ path: "/profiles", name: "Profiles" })
 @controller("/profiles", AuthorizeMiddleware)
 export class ProfileController extends BaseHttpController {
     @ApiOperationGet({

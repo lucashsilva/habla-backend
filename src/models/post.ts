@@ -4,22 +4,14 @@ import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
 
-@ApiModel({
-    name: "Post"
-})
+@ApiModel({ name: "Post" })
 @Entity()
 export class Post extends BaseEntity {
-    @ApiModelProperty({
-        description: "Post id" ,
-        required: true
-    })
+    @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
     
-    @ApiModelProperty({
-        description : "Post body",
-        required : true
-    })
+    @ApiModelProperty({ required : true })
     @Column({ nullable: false })
     body: string;
 
@@ -35,33 +27,19 @@ export class Post extends BaseEntity {
     @OneToMany(type => Comment, comment => comment.post)
     comments: Comment[];
 
-    @ApiModelProperty({
-        description : "Post owner profile id",
-        required : true
-    })
+    @ApiModelProperty({ required : true })
     @Column({ nullable: true })
     ownerUid: string;
 
-    @ApiModelProperty({
-        description: "Post channel id",
-        required: false
-    })
+    @ApiModelProperty()
     @Column({ nullable: true })
     channelId: number;
 
-    @ApiModelProperty({
-        description: "Creation date",
-        required: false,
-        type: 'Date'
-    })
+    @ApiModelProperty({ type: "string" })
     @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
 
-    @ApiModelProperty({
-        description: "Update date",
-        required: false,
-        type: 'Date'
-    })
+    @ApiModelProperty({ type: "string" })
     @UpdateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
 }

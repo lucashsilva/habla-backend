@@ -4,10 +4,7 @@ import { Post } from "../models/post";
 import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { ApiPath, ApiOperationGet, SwaggerDefinitionConstant, ApiOperationPost, ApiOperationDelete } from "swagger-express-ts";
 
-@ApiPath({
-    path: "/posts",
-    name: "Posts"
-})
+@ApiPath({ path: "/posts", name: "Posts" })
 @controller("/posts", AuthorizeMiddleware)
 export class PostController extends BaseHttpController {
     @ApiOperationGet({
@@ -102,7 +99,7 @@ export class PostController extends BaseHttpController {
             }
         },
         responses: {
-            201: { description: "Created", type: "Post", model: "Post" },
+            200: { description: "Deleted" },
             401: { description: "Unauthorized" },
             404: { description: 'Not found '},
             500: { description: "Internal Server Error" }

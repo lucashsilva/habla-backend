@@ -5,10 +5,7 @@ import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { Comment } from "../models/comment";
 import { ApiPath, ApiOperationGet, ApiOperationPost, SwaggerDefinitionConstant } from "swagger-express-ts";
 
-@ApiPath({
-    path: "/posts/:postId/comments",
-    name: "Post comments"
-})
+@ApiPath({ path: "/posts/:postId/comments", name: "Post comments" })
 @controller("/posts/:postId/comments", AuthorizeMiddleware)
 export class CommentController extends BaseHttpController {
     @ApiOperationGet({
@@ -46,6 +43,9 @@ export class CommentController extends BaseHttpController {
                 "postId": {
                     description: "Post id"
                 }
+            },
+            body: {
+                model: "Comment"
             }
         },
         responses: {

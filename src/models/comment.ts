@@ -3,12 +3,10 @@ import { Profile } from "./profile";
 import { Post } from "./post";
 import { ApiModelProperty, ApiModel } from "swagger-express-ts";
 
-@ApiModel({
-  name: "Comment"
-})
+@ApiModel({ name: "Comment" })
 @Entity()
 export class Comment extends BaseEntity {
-    @ApiModelProperty({ required: true })
+    @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
     
@@ -22,11 +20,11 @@ export class Comment extends BaseEntity {
     @ManyToOne(type => Post)
     post: Post;
 
-    @ApiModelProperty({ required: false, type: "string" })
+    @ApiModelProperty({ type: "string" })
     @CreateDateColumn({ type: "timestamp with time zone" })
     createdAt: Date;
 
-    @ApiModelProperty({ required: false, type: "string" })
+    @ApiModelProperty({ type: "string" })
     @UpdateDateColumn({ type: "timestamp with time zone" })
     updatedAt: Date;
 }
