@@ -1,23 +1,26 @@
 import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { Post } from "./post";
+import { ApiModel, ApiModelProperty } from "swagger-express-ts";
 
+@ApiModel({ name: "Channel" })
 @Entity()
 export class Channel extends BaseEntity {
+    @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
 
+    @ApiModelProperty({ required: true })
     @Column()
     title: string;
 
     @OneToMany(type => Post, post => post.channel)
     posts: Post[];
 
-    // @Column({ nullable: false, type: "point" })
-    // location: { x: number, y: number };
-
+    @ApiModelProperty({ type: "string" })
     @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
 
-    @CreateDateColumn({ type: "timestamp with time zone"})
+    @ApiModelProperty({ type: "string" })
+    @UpdateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
 }
