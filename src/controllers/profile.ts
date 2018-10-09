@@ -50,6 +50,9 @@ export class ProfileController extends BaseHttpController {
         parameters: {
            path: {
                "uid": { description: "User id" }
+           },
+           body: {
+               model: "Profile"
            }
         },
         responses: {
