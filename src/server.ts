@@ -68,10 +68,15 @@ server.setConfig((app) => {
 
 const app = server.build();
 
+
 container.get(DatabaseService).ready().then(() => {
     // create the http server
     const httpServer = http.createServer(app);
     httpServer.listen(PORT);
 
     console.log(`Listening on port ${PORT}.`);
+
+    app.emit('ready');
 });
+
+export default app;
