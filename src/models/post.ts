@@ -10,8 +10,11 @@ export class Post extends BaseEntity {
     @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
+
+    @Column({ nullable: false, default: false })
+    anonymous: boolean;
     
-    @ApiModelProperty({ required : true })
+    @ApiModelProperty({ required: true })
     @Column({ nullable: false })
     body: string;
 
@@ -21,7 +24,7 @@ export class Post extends BaseEntity {
     @ManyToOne(type => Channel, channel => channel.posts, { onDelete: "SET NULL" })
     channel: Channel;
 
-    @ManyToOne(type => Profile, profile => profile.posts)
+    @ManyToOne(type => Profile, profile => profile.posts, { nullable: true })
     owner: Profile;
 
     @OneToMany(type => Comment, comment => comment.post)

@@ -78,9 +78,9 @@ export class PostController extends BaseHttpController {
     @httpPost("/")
     private async create(@requestBody() post: Post, req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post> {
         try {
-            const createdPost = await Post.create({ ...post, owner: { uid: this.httpContext.user.details.uid }}).save();
+            const createdPost = await Post.create({ ...post, owner: post.anonymous? null: { uid: this.httpContext.user.details.uid }}).save();
             res.status(201);
-
+            
             return createdPost;
         } catch (error) {
             console.log(error);
