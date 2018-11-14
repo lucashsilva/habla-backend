@@ -18,14 +18,20 @@ export class PostController extends BaseHttpController {
     @httpGet("/")
     private async getPosts(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post[]> {
         try {
-            let where;
+            // to do: ensure lon, lat and radius are passed
+            
+            const query = Post.createQueryBuilder("post")
+                                .leftJoinAndSelect("post.owner", "owner")
+                                .where(`ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${req.query.lat} ${req.query.lon}):geography', 4326), ${req.query.radius})`)
+                                .orderBy("post.createdAt", "DESC");
 
             if (req.query.channelId) {
-                where = { channelId: req.query.channelId }
+                query.leftJoinAndSelect("post.channel", "channel", `channel.id = ${req.query.channelId}`);
             }
             
-            return await Post.find({ where: where, relations: ['owner', 'channel'], order: { 'createdAt': 'DESC' }});
+            return await query.getMany();
         } catch (error) {
+            console.log(error);
             res.status(500).end();
         }
     }

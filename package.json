@@ -34,7 +34,7 @@
     "swagger-ui-dist": "^3.19.0",
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.27",
-    "typeorm": "^0.2.7",
+    "typeorm": "^0.2.9",
     "typescript": "^3.0.3"
   },
   "devDependencies": {
