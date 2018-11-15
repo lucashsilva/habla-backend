@@ -10,9 +10,6 @@ export class Post extends BaseEntity {
     @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column({ nullable: false, default: false })
-    anonymous: boolean;
     
     @ApiModelProperty({ required: true })
     @Column({ nullable: false })
@@ -21,7 +18,8 @@ export class Post extends BaseEntity {
     @Column("geometry", {
         spatialFeatureType: "Point",
         srid: 4326,
-        nullable: true
+        nullable: true,
+        select: false
     })
     @Index({ spatial: true })
     location: any;
@@ -50,4 +48,10 @@ export class Post extends BaseEntity {
     @ApiModelProperty({ type: "string" })
     @UpdateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
+
+    // only for data transfer
+
+    distance: number;
+
+    anonymous: boolean;
 }
