@@ -22,8 +22,10 @@ export class PostController extends BaseHttpController {
             
             const query = Post.createQueryBuilder("post")
                                 .leftJoinAndSelect("post.owner", "owner")
-                                .where(`ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${req.query.lat} ${req.query.lon}):geography', 4326), ${req.query.radius})`)
-                                .orderBy("post.createdAt", "DESC");
+                                .addSelect(`ST_Distance_Sphere(post.location, ST_GeomFromText('POINT(${req.query.lat} ${req.query.lon})', 4326))`, "distance")
+                                .where(`ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${req.query.lat} ${req.query.lon})', 4326)::geography, ${req.query.radius})`)
+                                .orderBy("post.createdAt", "DESC")
+                                .addOrderBy("distance", "ASC")
 
             if (req.query.channelId) {
                 query.leftJoinAndSelect("post.channel", "channel", `channel.id = ${req.query.channelId}`);
