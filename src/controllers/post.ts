@@ -3,6 +3,8 @@ import { controller, httpGet, BaseHttpController, requestParam, httpPost, reques
 import { Post } from "../models/post";
 import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { ApiPath, ApiOperationGet, SwaggerDefinitionConstant, ApiOperationPost, ApiOperationDelete } from "swagger-express-ts";
+import { PostDTO } from "../dto/Post";
+import * as geo from "geolib";
 
 @ApiPath({ path: "/posts", name: "Posts" })
 @controller("/posts", AuthorizeMiddleware)
@@ -16,7 +18,7 @@ export class PostController extends BaseHttpController {
         }
     })
     @httpGet("/")
-    private async getPosts(req: express.Request, res: express.Response, next: express.NextFunction): Promise<Post[]> {
+    private async getPosts(req: express.Request, res: express.Response, next: express.NextFunction): Promise<PostDTO[]> {
         try {
             // to do: ensure lon, lat and radius are passed
             
@@ -31,7 +33,27 @@ export class PostController extends BaseHttpController {
                 query.leftJoinAndSelect("post.channel", "channel", `channel.id = ${req.query.channelId}`);
             }
             
-            return await query.getMany();
+            const posts = (await query.getMany()).map(post => {
+                const dto = new PostDTO(post);
+
+                let distance = post.location? geo.getDistanceSimple({ latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }, { latitude: req.query.lat, longitude: req.query.lon }): -1;
+
+                if (distance < 0) {
+                    dto.distance = "unknown";
+                } else if (distance < 1000) {
+                    dto.distance = "very close";
+                } else if (distance < 10000) {
+                    dto.distance = "close";
+                } else if (distance < 250000) {
+                    dto.distance = "far";
+                } else {
+                    dto.distance = "very far";
+                }
+            
+                return dto;
+            });
+
+            return posts;
         } catch (error) {
             console.log(error);
             res.status(500).end();

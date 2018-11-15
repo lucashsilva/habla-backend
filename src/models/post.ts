@@ -18,8 +18,7 @@ export class Post extends BaseEntity {
     @Column("geometry", {
         spatialFeatureType: "Point",
         srid: 4326,
-        nullable: true,
-        select: false
+        nullable: true
     })
     @Index({ spatial: true })
     location: any;
