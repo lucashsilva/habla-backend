@@ -3,7 +3,7 @@ import { controller, httpGet, BaseHttpController, requestParam, httpPost, reques
 import { Post } from "../models/post";
 import { AuthorizeMiddleware } from "../middlewares/authorize";
 import { ApiPath, ApiOperationGet, SwaggerDefinitionConstant, ApiOperationPost, ApiOperationDelete } from "swagger-express-ts";
-import { PostDTO } from "../dto/Post";
+import { PostDTO } from "../dto/post";
 import * as geo from "geolib";
 
 @ApiPath({ path: "/posts", name: "Posts" })

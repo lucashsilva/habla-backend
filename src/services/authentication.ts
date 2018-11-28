@@ -7,7 +7,7 @@ export class AuthenticationService {
     constructor() {
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            databaseURL: "https://habla-215902.firebaseio.com"
+            databaseURL: process.env.FIREBASE_DATABASE_URL
         });
 
         console.log("Authentication provider is ready.");

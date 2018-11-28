@@ -77,6 +77,8 @@ container.get(DatabaseService).ready().then(() => {
     console.log(`Listening on port ${PORT}.`);
 
     app.emit('ready');
+}).catch(error => {
+    console.log(error);
 });
 
 export default app;
