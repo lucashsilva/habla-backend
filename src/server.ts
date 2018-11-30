@@ -13,7 +13,7 @@ import { Profile } from './models/profile';
 import { Comment } from './models/comment';
 import { Channel } from './models/channel';
 import { AppSchema } from './schema/schema';
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -73,6 +73,7 @@ createConnection({
     password: process.env.DB_PASSWORD || "habla",
     database: process.env.DB_NAME || "habla",
     synchronize: true,
+    logging: false,
     entities: [
         Profile,
         Post,

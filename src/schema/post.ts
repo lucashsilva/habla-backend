@@ -12,11 +12,10 @@ export const PostTypeDef = `
 
   input PostInput {
     body: String!
-    channelId: ID
   }
 
   extend type Mutation {
-    createPost(post: PostInput!): Post!
+    createPost(channelId: ID, post: PostInput!): Post!
   }
 
   type Post {
