@@ -16,4 +16,4 @@ services:
     # error if you point to the actual credential file directly
     - ~/.config:/root/.config
     ports:
-    - 3306:3306
+    - 5432:5432
