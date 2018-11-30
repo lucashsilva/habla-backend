@@ -9,6 +9,7 @@ metadata:
 data:
   DB_NAME: "habla"
   SERVER_PORT: "80"
+  FIREBASE_DATABASE_URL: "https://habla-215902.firebaseio.com"
 ---
 apiVersion: "extensions/v1beta1"
 kind: "Deployment"
@@ -29,7 +30,7 @@ spec:
     spec:
       containers:
       - name: "habla"
-        image: "gcr.io/habla-215902/habla:v0.0.1"
+        image: "gcr.io/habla-215902/habla:v0.0.2"
         env:
         - name: "DB_NAME"
           valueFrom:
@@ -58,7 +59,7 @@ spec:
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
         command: ["/cloud_sql_proxy",
-                  "-instances=habla-215902:southamerica-east1:habla=tcp:5432",
+                  "-instances=habla-215902:us-central1:habla-db=tcp:5432",
                   "-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
           runAsUser: 2  # non-root user
@@ -104,4 +105,4 @@ spec:
   - port: 80
     targetPort: 80
   type: LoadBalancer
-  loadBalancerIP: "35.199.82.46"
+  loadBalancerIP: "35.226.168.10"

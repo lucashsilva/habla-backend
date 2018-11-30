@@ -11,7 +11,7 @@ export class Channel extends BaseEntity {
 
     @ApiModelProperty({ required: true })
     @Column()
-    title: string;
+    name: string;
 
     @OneToMany(type => Post, post => post.channel)
     posts: Post[];

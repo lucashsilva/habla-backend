@@ -18,7 +18,7 @@ export class Post extends BaseEntity {
     @Column("geometry", {
         spatialFeatureType: "Point",
         srid: 4326,
-        nullable: true
+        nullable: false
     })
     @Index({ spatial: true })
     location: any;
@@ -26,19 +26,18 @@ export class Post extends BaseEntity {
     @ManyToOne(type => Channel, channel => channel.posts, { onDelete: "SET NULL" })
     channel: Channel;
 
+    @Column({ nullable: true })
+    channelId: number;
+
     @ManyToOne(type => Profile, profile => profile.posts, { nullable: true })
     owner: Profile;
 
-    @OneToMany(type => Comment, comment => comment.post)
+    @OneToMany(type => Comment, comment => comment.post, { onDelete: 'CASCADE' })
     comments: Comment[];
 
-    @ApiModelProperty({ required : true })
+    @ApiModelProperty({ required: false })
     @Column({ nullable: true })
     ownerUid: string;
-
-    @ApiModelProperty()
-    @Column({ nullable: true })
-    channelId: number;
 
     @ApiModelProperty({ type: "string" })
     @CreateDateColumn({ type: "timestamp with time zone"})
@@ -47,10 +46,4 @@ export class Post extends BaseEntity {
     @ApiModelProperty({ type: "string" })
     @UpdateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
-
-    // only for data transfer
-
-    distance: number;
-
-    anonymous: boolean;
 }

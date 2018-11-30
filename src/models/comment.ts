@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from "typeorm";
+import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn, Index } from "typeorm";
 import { Profile } from "./profile";
 import { Post } from "./post";
 import { ApiModelProperty, ApiModel } from "swagger-express-ts";
@@ -17,8 +17,22 @@ export class Comment extends BaseEntity {
     @ManyToOne(type => Profile)
     owner: Profile;
 
+    @Column({ nullable: true })
+    ownerUid: number;
+
     @ManyToOne(type => Post)
     post: Post;
+
+    @Column({ nullable: false })
+    postId: number;
+
+    @Column("geometry", {
+        spatialFeatureType: "Point",
+        srid: 4326,
+        nullable: false
+    })
+    @Index({ spatial: true })
+    location: any;
 
     @ApiModelProperty({ type: "string" })
     @CreateDateColumn({ type: "timestamp with time zone" })
