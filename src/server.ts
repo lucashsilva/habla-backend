@@ -69,6 +69,7 @@ const httpServer = http.createServer(app);
 
 createConnection({
     type: "postgres",
+    host: process.env.DB_HOST || "localhost",
     username: process.env.DB_USER || "habla",
     password: process.env.DB_PASSWORD || "habla",
     database: process.env.DB_NAME || "habla",

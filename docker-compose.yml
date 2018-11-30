@@ -6,6 +6,10 @@ services:
     build: .
     ports:
     - "80:3000"
+    links:
+    - cloud-sql-proxy
+    environment:
+      DB_HOST: cloud-sql-proxy
   cloud-sql-proxy:
     image: gcr.io/cloudsql-docker/gce-proxy:1.11
     # Port: MySQL (3306), PostgreSQL (5433)
