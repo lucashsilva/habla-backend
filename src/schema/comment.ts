@@ -36,6 +36,10 @@ export const CommentResolvers = {
   },
   Comment: {
     distance: (comment: Comment, args, context) => {
+      if (!(context.location && context.location.latitude && context.location.longitude && comment.location && comment.location.coordinates)) {
+        return "unknown";
+      }
+
       return getMaskedDistance({ latitude: comment.location.coordinates[0], longitude: comment.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
     },
     owner: async(comment: Comment) => {
