@@ -27,6 +27,7 @@ export const PostTypeDef = `
     owner: Profile
     channel: Channel
     comments: [Comment!]!
+    commentsCount: Int!
   }
 `;
 
@@ -70,6 +71,9 @@ export const PostResolvers = {
       }
 
       return getMaskedDistance({ latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
+    },
+    commentsCount: async(post: Post) => {
+      return await Comment.count({ post: post });
     }
   },
   Mutation: {
