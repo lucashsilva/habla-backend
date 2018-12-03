@@ -13,6 +13,7 @@ import { Profile } from './models/profile';
 import { Comment } from './models/comment';
 import { Channel } from './models/channel';
 import { AppSchema } from './schema/schema';
+import { ProfileVotePost } from './models/profile-vote-post';
 const { ApolloServer } = require('apollo-server-express');
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
@@ -79,7 +80,8 @@ createConnection({
         Profile,
         Post,
         Comment, 
-        Channel
+        Channel,
+        ProfileVotePost
     ]
 }).then(() => {
     httpServer.listen(PORT);

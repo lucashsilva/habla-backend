@@ -3,6 +3,7 @@ import { Channel } from "./channel";
 import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
+import { ProfileVotePost } from "./profile-vote-post";
 
 @ApiModel({ name: "Post" })
 @Entity()
@@ -34,6 +35,9 @@ export class Post extends BaseEntity {
 
     @OneToMany(type => Comment, comment => comment.post, { onDelete: 'CASCADE' })
     comments: Comment[];
+
+    @OneToMany(type => ProfileVotePost, pvp => pvp.post)
+    profileVotePosts: ProfileVotePost[];
 
     @ApiModelProperty({ required: false })
     @Column({ nullable: true })
