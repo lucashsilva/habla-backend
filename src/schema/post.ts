@@ -3,6 +3,7 @@ import { Profile } from "../models/profile";
 import { Comment } from "../models/comment";
 import { Channel } from "../models/channel";
 import { getMaskedDistance } from "../util/geo";
+import { ProfileVotePost } from "../models/profile-vote-post";
 
 export const PostTypeDef = `
   extend type Query {
@@ -28,6 +29,7 @@ export const PostTypeDef = `
     channel: Channel
     comments: [Comment!]!
     commentsCount: Int!
+    rate: Int!
   }
 `;
 
@@ -74,6 +76,9 @@ export const PostResolvers = {
     },
     commentsCount: async(post: Post) => {
       return await Comment.count({ post: post });
+    },
+    rate: async(post: Post) => {
+      return (await ProfileVotePost.count({ post: post, type: "UP"})) - (await ProfileVotePost.count({ post: post, type: "DOWN"}));
     }
   },
   Mutation: {
