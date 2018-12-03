@@ -30,6 +30,7 @@ export const PostTypeDef = `
     comments: [Comment!]!
     commentsCount: Int!
     rate: Int!
+    profilePostVote: PostVote
   }
 `;
 
@@ -79,6 +80,9 @@ export const PostResolvers = {
     },
     rate: async(post: Post) => {
       return (await ProfileVotePost.count({ post: post, type: "UP"})) - (await ProfileVotePost.count({ post: post, type: "DOWN"}));
+    },
+    profilePostVote: async(post: Post, args, context) => {
+      return await ProfileVotePost.findOne({ postId: post.id, profileUid: context.user.uid });
     }
   },
   Mutation: {

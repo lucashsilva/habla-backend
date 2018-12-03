@@ -1,4 +1,6 @@
 import { ProfileVotePost } from "../models/profile-vote-post";
+import { Post } from "../models/post";
+import { Profile } from "../models/profile";
 
 export const ProfileVotePostTypeDef = `
   extend type Mutation {
@@ -6,8 +8,9 @@ export const ProfileVotePostTypeDef = `
   }
 
   type PostVote {
-    postId: ID!
-    profileUid: ID!
+    post: Post!
+    profile: Profile!
+    type: PostVoteType
   }
 
   enum PostVoteType {
@@ -17,6 +20,14 @@ export const ProfileVotePostTypeDef = `
 `;
 
 export const ProfileVotePostResolvers = {
+  PostVote: {
+    post: async(profileVotePost: ProfileVotePost) => {
+      return await Post.findOne(profileVotePost.postId);
+    },
+    profile: async(profileVotePost: ProfileVotePost) => {
+      return await Profile.findOne(profileVotePost.profileUid);
+    }
+  },
   Mutation: {
     vote: async(parent, args, context) => {
       const { postId, type } = args;
