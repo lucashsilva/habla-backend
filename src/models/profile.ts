@@ -36,6 +36,9 @@ export class Profile extends BaseEntity {
     @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'OTHER'], nullable: true })
     gender: 'MALE' | 'FEMALE' | 'OTHER';
 
+    @Column({ nullable: true })
+    photoURL: string;
+
     @OneToMany(type => Post, post => post.owner, { onDelete: 'CASCADE' })
     posts: Post[];
 

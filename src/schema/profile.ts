@@ -13,6 +13,7 @@ export const ProfileTypeDef = `
     website: String
     phone: String
     gender: Gender
+    photoURL: String
   }
 
   extend type Mutation {
@@ -28,6 +29,7 @@ export const ProfileTypeDef = `
     phone: String
     gender: Gender
     posts: [Post!]!
+    photoURL: String
   }
 
   enum Gender {
