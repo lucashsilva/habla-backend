@@ -6,6 +6,7 @@ import * as morgan from 'morgan';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as express from "express";
+import * as cors from "cors";
 import { getUserFromToken } from './services/firebase';
 import { createConnection } from 'typeorm';
 import { Post } from './models/post';
@@ -43,6 +44,12 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(bodyParser.json());
+
+
+app.use(cors({ 
+    origin: 'http://localhost:3001',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}));
 
 app.use(async(req, res, next) => {
     let user = req.headers['authorization']? await getUserFromToken(req.headers['authorization']): null;
