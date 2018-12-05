@@ -60,6 +60,8 @@ typings/
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
+devops
+
 # next.js build output
 .next
 
@@ -73,3 +75,4 @@ typings/
 .serverless
 
 service-account.json
+

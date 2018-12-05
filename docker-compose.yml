@@ -1,0 +1,23 @@
+version: '3'
+services:
+  api:
+    depends_on:
+    - cloud-sql-proxy
+    build: .
+    ports:
+    - 80:3000
+    links:
+    - cloud-sql-proxy
+    environment:
+      DB_HOST: cloud-sql-proxy
+  cloud-sql-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.11
+    # Port: MySQL (3306), PostgreSQL (5433)
+    command: /cloud_sql_proxy -instances=habla-215902:us-central1:habla=tcp:0.0.0.0:5432
+    volumes:
+    # this mounts your application default credential on the container, preventing the
+    # 'invalid json file "/config": google: read JWT from JSON credentials: 'type' field is "authorized_user" (expected "service_account")'
+    # error if you point to the actual credential file directly
+    - ~/.config:/root/.config
+    ports:
+    - 5432:5432

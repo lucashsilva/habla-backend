@@ -1,6 +1,7 @@
 import { Column, Entity, BaseEntity, Index, OneToMany, PrimaryColumn } from "typeorm";
 import { Post } from "./post";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
+import { ProfileVotePost } from "./profile-vote-post";
 
 @ApiModel({ name: "Profile" })
 @Entity()
@@ -35,6 +36,12 @@ export class Profile extends BaseEntity {
     @Column({ type: 'enum', enum: ['MALE', 'FEMALE', 'OTHER'], nullable: true })
     gender: 'MALE' | 'FEMALE' | 'OTHER';
 
+    @Column({ nullable: true })
+    photoURL: string;
+
     @OneToMany(type => Post, post => post.owner, { onDelete: 'CASCADE' })
     posts: Post[];
+
+    @OneToMany(type => ProfileVotePost, pvp => pvp.profile)
+    profileVotePosts: ProfileVotePost[];
 }
