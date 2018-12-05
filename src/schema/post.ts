@@ -16,7 +16,7 @@ export const PostTypeDef = `
   }
 
   extend type Mutation {
-    createPost(channelId: ID, post: PostInput!): Post!
+    createPost(channelId: ID, post: PostInput!, anonymous: Boolean): Post!
   }
 
   type Post {
@@ -89,7 +89,10 @@ export const PostResolvers = {
     createPost: async(parent, args, context) => {
       const post = args.post;
 
-      post.ownerUid = context.user.uid;
+      if (!args.anonymous) {
+        post.ownerUid = context.user.uid;
+      } 
+
       post.channelId = args.channelId;
 
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
