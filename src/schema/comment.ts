@@ -16,7 +16,7 @@ export const CommentTypeDef = `
   }
 
   extend type Mutation {
-    createComment(postId: ID!, comment: CommentInput!): Comment!
+    createComment(postId: ID!, comment: CommentInput!, anonymous: Boolean): Comment!
   }
 `;
 
@@ -26,7 +26,10 @@ export const CommentResolvers = {
       const comment = args.comment;
 
       comment.postId = args.postId;
-      comment.ownerUid = context.user.uid;
+
+      if (!args.anonymous) {
+        comment.ownerUid = context.user.uid;
+      }
 
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       comment.location = location;
