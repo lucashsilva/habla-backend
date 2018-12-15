@@ -5,6 +5,14 @@ export const ChannelTypeDef = `
     channels: [Channel!]!
   }
 
+  input ChannelInput {
+    name: String!
+  }
+
+  extend type Mutation {
+    createChannel(channel: ChannelInput!): Channel!
+  }
+
   type Channel {
     id: ID!
     name: String!
@@ -17,6 +25,11 @@ export const ChannelResolvers = {
   Query: {
     channels: async(parent) => {
       return await Channel.find();
+    }
+  },
+  Mutation: {
+    createChannel: async(parent, args) => {
+      return await Channel.create(args.channel).save(); 
     }
   },
   Channel: {

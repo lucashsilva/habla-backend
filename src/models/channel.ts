@@ -10,7 +10,7 @@ export class Channel extends BaseEntity {
     id: number;
 
     @ApiModelProperty({ required: true })
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @OneToMany(type => Post, post => post.channel)
