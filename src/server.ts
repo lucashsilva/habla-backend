@@ -24,8 +24,7 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 const app = express();
 
-app.use('/api-docs/swagger', express.static('src/swagger'));
-app.use('/api-docs/swagger/assets', express.static('node_modules/swagger-ui-dist'));
+app.use('/', express.static('src/static'));
 
 // config for express
 app.use(logger);
