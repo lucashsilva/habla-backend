@@ -75,6 +75,8 @@ server.applyMiddleware({ app });
 
 const httpServer = http.createServer(app);
 
+console.log('Starting server...');
+
 createConnection({
     type: "postgres",
     host: process.env.DB_HOST || "localhost",
