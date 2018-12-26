@@ -17,6 +17,7 @@ export const PostTypeDef = `
 
   extend type Mutation {
     createPost(channelId: ID, post: PostInput!, anonymous: Boolean): Post!
+    deletePost(postId: ID!): Boolean!
   }
 
   type Post {
@@ -40,7 +41,7 @@ export const PostResolvers = {
       if (!context.location) return [];
 
       const query = Post.createQueryBuilder("post")
-                        .where(`ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
+                        .where(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
                         .skip(args.skip)
                         .take(args.take)
                         .orderBy("post.createdAt", "DESC");
@@ -99,6 +100,22 @@ export const PostResolvers = {
       post.location = location;
 
       return await Post.create(post).save();
+    },
+    deletePost: async(parent, args, context) => {
+      if (context.user) {
+        let post = await Post.findOne(args.postId);
+
+        if (!post) {
+          // throw not found error
+        } else if (post.ownerUid === context.user.uid) {
+          post.deletedAt = new Date(Date.now());
+          await post.save();
+
+          return true;
+        }
+      }
+      
+      return false;
     }
   }
 };

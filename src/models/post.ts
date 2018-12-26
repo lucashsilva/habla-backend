@@ -50,4 +50,7 @@ export class Post extends BaseEntity {
     @ApiModelProperty({ type: "string" })
     @UpdateDateColumn({ type: "timestamp with time zone"})
     updatedAt: Date;
+
+    @Column({ type: "timestamp with time zone", nullable: true })
+    deletedAt: Date;
 }

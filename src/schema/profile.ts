@@ -1,5 +1,6 @@
 import { Profile } from "../models/profile";
 import { Post } from "../models/post";
+import { IsNull } from "typeorm";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -47,7 +48,7 @@ export const ProfileResolvers = {
   },
   Profile: {
     posts: async(profile: Profile) => {
-      return await Post.find({ owner: profile });
+      return await Post.find({ where: { owner: profile, deletedAt: IsNull()}});
     }
   },
   Mutation: {
