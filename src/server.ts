@@ -7,7 +7,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as express from "express";
 import * as cors from "cors";
-import { getUserFromToken } from './services/firebase';
 import { createConnection } from 'typeorm';
 import { Post } from './models/post';
 import { Profile } from './models/profile';
@@ -15,7 +14,9 @@ import { Comment } from './models/comment';
 import { Channel } from './models/channel';
 import { AppSchema } from './schema/schema';
 import { ProfileVotePost } from './models/profile-vote-post';
-const { ApolloServer } = require('apollo-server-express');
+import { ApolloServer } from 'apollo-server-express';
+import { getUserFromToken, requireAuthentication } from './services/firebase';
+import { AuthenticationError } from './errors/http/authentication-error';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -45,31 +46,31 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-
 app.use(cors({ 
     origin: '*',
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 
-app.use(async(req, res, next) => {
-    let user = req.headers['authorization']? await getUserFromToken(req.headers['authorization']): null;
+const server = new ApolloServer({ 
+    typeDefs: AppSchema.typeDefs, 
+    resolvers: AppSchema.resolvers, 
+    context: async({ req }) => {
+        const location = { latitude: req.headers['latitude'], longitude: req.headers['longitude'] };
+        
+        if (!req.headers['authorization']) {
+            throw new AuthenticationError({ message: `Missing 'Authorization' header.`});
+        }
 
-    if (!user) {
-        res.status(401).end();
-        return;
+        const user = await requireAuthentication(req);
+
+        return { location, user };
+    },
+    formatError: (err) => {
+        console.log(err.originalError)
+
+        return err;
     }
-
-    req['user'] = user;
-
-    next();
 });
-
-const server = new ApolloServer({ typeDefs: AppSchema.typeDefs, resolvers: AppSchema.resolvers, context: async({ req }) => {
-    let user = req['user'];
-    let location = { latitude: req.headers['latitude'], longitude: req.headers['longitude'] };
-
-    return { user, location };
-} });
 
 server.applyMiddleware({ app });
 

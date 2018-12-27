@@ -4,6 +4,7 @@ import { Comment } from "../models/comment";
 import { Channel } from "../models/channel";
 import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
+import { IsNull } from "typeorm";
 
 export const PostTypeDef = `
   extend type Query {
@@ -38,8 +39,7 @@ export const PostTypeDef = `
 export const PostResolvers = {
   Query: {
     posts: async(parent, args, context) => {
-      if (!context.location) return [];
-
+      throw { message: 'oi'}
       const query = Post.createQueryBuilder("post")
                         .where(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
                         .skip(args.skip)
@@ -53,7 +53,7 @@ export const PostResolvers = {
       return query.getMany();
     },
     post: async(parent, args) => {
-      return await Post.findOne(args.id);
+      return await Post.findOne({ where: { id: args.id, deletedAt: IsNull() }});
     }
   },
   Post: {

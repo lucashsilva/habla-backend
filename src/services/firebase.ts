@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { AuthenticationError } from '../errors/http/authentication-error';
 var serviceAccount = require("/secrets/firebase/service-account.json");
 
 admin.initializeApp({
@@ -8,14 +9,30 @@ admin.initializeApp({
 
 const getUserFromToken = async(token: string) => {
     try {
-        let user = await admin.auth().getUser((await admin.auth().verifyIdToken(token)).uid);
+        let user = {
+            uid: (await admin.auth().verifyIdToken(token)).uid
+        }
         return user;
     } catch (error) {
-        console.log(error);
-        return null;
+        throw new AuthenticationError({ message: 'Invalid token.' });
     }
 }
 
+const requireAuthentication = async(req) => {
+    if (!req.headers['authorization']) {
+        throw new AuthenticationError({ message: `Missing 'Authorization' header.`});
+    }
+
+    const user = await getUserFromToken(req.headers['authorization']);
+
+    if (!user) {
+        throw new AuthenticationError();
+    }
+
+    return user;
+}
+
 export {
-    getUserFromToken
+    getUserFromToken,
+    requireAuthentication
 };
