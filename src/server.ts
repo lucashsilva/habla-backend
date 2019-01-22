@@ -57,18 +57,12 @@ const server = new ApolloServer({
     context: async({ req }) => {
         const location = { latitude: req.headers['latitude'], longitude: req.headers['longitude'] };
         
-        if (!req.headers['authorization']) {
-            throw new AuthenticationError({ message: `Missing 'Authorization' header.`});
-        }
-
         const user = await requireAuthentication(req);
 
         return { location, user };
     },
     formatError: (err) => {
-        console.log(err.originalError)
-
-        return err;
+        return { code: err.extensions.code, message: err.message };
     }
 });
 

@@ -20,13 +20,13 @@ const getUserFromToken = async(token: string) => {
 
 const requireAuthentication = async(req) => {
     if (!req.headers['authorization']) {
-        throw new AuthenticationError({ message: `Missing 'Authorization' header.`});
+        throw new AuthenticationError(`Missing 'Authorization' header.`);
     }
 
     const user = await getUserFromToken(req.headers['authorization']);
 
     if (!user) {
-        throw new AuthenticationError();
+        throw new AuthenticationError(`Invalid token.`);
     }
 
     return user;

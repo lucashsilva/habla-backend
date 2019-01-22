@@ -1,10 +1,8 @@
-import { HttpError } from "./http-error";
-import { ErrorOptions } from "../error-options";
+import HablaErrorCodes from "../error-codes";
+import { HablaError } from "../habla-error";
 
-export class NotFoundError extends HttpError {
-    httpStatus = 404;
-    
-    constructor(options?: ErrorOptions) {
-        super({ ...options, message: options && options.message || 'Resource not found.' });
+export class NotFoundError extends HablaError {
+    constructor(message?: string) {
+        super(message || 'Resource not found.', HablaErrorCodes.NOT_FOUND_ERROR);
     }
 }

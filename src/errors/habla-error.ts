@@ -1,9 +1,7 @@
-import { ErrorOptions } from "./error-options";
+import { ApolloError } from "apollo-server-core";
 
-export abstract class HablaError {
-    readonly message: string;
-
-    constructor(options?: ErrorOptions) {
-        this.message = options && options.message || 'An error ocurred.';
+export class HablaError extends ApolloError {
+    constructor(message: string, code: string) {
+        super(message, code);
     }
 }

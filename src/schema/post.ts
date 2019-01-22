@@ -5,6 +5,9 @@ import { Channel } from "../models/channel";
 import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { IsNull } from "typeorm";
+import { requireLocationInfo } from "../util/context";
+import { NotFoundError } from "../errors/http/not-found-error";
+import { AuthorizationError } from "../errors/http/authorization-error";
 
 export const PostTypeDef = `
   extend type Query {
@@ -39,7 +42,8 @@ export const PostTypeDef = `
 export const PostResolvers = {
   Query: {
     posts: async(parent, args, context) => {
-      throw { message: 'oi'}
+      requireLocationInfo(context);
+
       const query = Post.createQueryBuilder("post")
                         .where(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
                         .skip(args.skip)
@@ -70,9 +74,7 @@ export const PostResolvers = {
       return post.channelId? await Channel.findOne(post.channelId): null;
     },
     distance: (post, args, context) => {
-      if (!(context.location && context.location.latitude && context.location.longitude && post.location && post.location.coordinates)) {
-        return "unknown";
-      }
+      requireLocationInfo(context);
 
       return getMaskedDistance({ latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
     },
@@ -88,6 +90,8 @@ export const PostResolvers = {
   },
   Mutation: {
     createPost: async(parent, args, context) => {
+      requireLocationInfo(context);
+
       const post = args.post;
 
       if (!args.anonymous) {
@@ -102,20 +106,18 @@ export const PostResolvers = {
       return await Post.create(post).save();
     },
     deletePost: async(parent, args, context) => {
-      if (context.user) {
-        let post = await Post.findOne(args.postId);
+      let post = await Post.findOne(args.postId);
 
-        if (!post) {
-          // throw not found error
-        } else if (post.ownerUid === context.user.uid) {
-          post.deletedAt = new Date(Date.now());
-          await post.save();
+      if (!post) {
+        throw new NotFoundError();
+      } else if (post.ownerUid !== context.user.uid) {
+        throw new AuthorizationError();
+      } else {
+        post.deletedAt = new Date(Date.now());
+        await post.save();
 
-          return true;
-        }
+        return true;
       }
-      
-      return false;
     }
   }
 };

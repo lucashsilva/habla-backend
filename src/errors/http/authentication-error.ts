@@ -1,10 +1,8 @@
-import { HttpError } from "./http-error";
-import { ErrorOptions } from "../error-options";
+import HablaErrorCodes from "../error-codes";
+import { HablaError } from "../habla-error";
 
-export class AuthenticationError extends HttpError {
-    httpStatus = 401;
-
-    constructor(options?: ErrorOptions) {
-        super({ ...options, message: options && options.message || 'Resource requires authentication to be accessed.' });
+export class AuthenticationError extends HablaError {
+    constructor(message?) {
+        super(message || 'Resource requires authentication to be accessed.', HablaErrorCodes.AUTHENTICATION_ERROR);
     }
 }
