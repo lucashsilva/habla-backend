@@ -17,6 +17,7 @@ import { ProfileVotePost } from './models/profile-vote-post';
 import { ApolloServer } from 'apollo-server-express';
 import { getUserFromToken, requireAuthentication } from './services/firebase';
 import { AuthenticationError } from './errors/http/authentication-error';
+import { Notification } from './models/notification';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -83,7 +84,8 @@ createConnection({
         Post,
         Comment, 
         Channel,
-        ProfileVotePost
+        ProfileVotePost,
+        Notification
     ]
 }).then(() => {
     httpServer.listen(PORT);

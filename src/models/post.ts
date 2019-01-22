@@ -4,6 +4,7 @@ import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
 import { ProfileVotePost } from "./profile-vote-post";
+import { Notification } from "./notification";
 
 @ApiModel({ name: "Post" })
 @Entity()

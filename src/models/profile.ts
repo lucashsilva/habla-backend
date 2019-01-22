@@ -2,6 +2,7 @@ import { Column, Entity, BaseEntity, Index, OneToMany, PrimaryColumn } from "typ
 import { Post } from "./post";
 import { ApiModel, ApiModelProperty } from "swagger-express-ts";
 import { ProfileVotePost } from "./profile-vote-post";
+import { Notification } from "./notification";
 
 @ApiModel({ name: "Profile" })
 @Entity()
@@ -44,4 +45,7 @@ export class Profile extends BaseEntity {
 
     @OneToMany(type => ProfileVotePost, pvp => pvp.profile)
     profileVotePosts: ProfileVotePost[];
+
+    @OneToMany(type => Notification, notification => notification.receiver)
+    notifications: Notification[];
 }
