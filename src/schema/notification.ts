@@ -16,6 +16,7 @@ export const NotificationTypeDef = `
     type: NotificationType!
     read: Boolean!
     comment: Comment
+    createdAt: Date!
   }
 
   enum NotificationType {

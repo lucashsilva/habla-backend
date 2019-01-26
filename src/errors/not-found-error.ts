@@ -1,5 +1,5 @@
-import HablaErrorCodes from "../error-codes";
-import { HablaError } from "../habla-error";
+import HablaErrorCodes from "./error-codes";
+import { HablaError } from "./habla-error";
 
 export class NotFoundError extends HablaError {
     constructor(message?: string) {

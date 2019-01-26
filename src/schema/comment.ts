@@ -5,7 +5,7 @@ import { requireLocationInfo } from "../util/context";
 import { getConnection } from "typeorm";
 import { Post } from "../models/post";
 import { NotificationService } from "../services/notification";
-import { NotFoundError } from "../errors/http/not-found-error";
+import { NotFoundError } from "../errors/not-found-error";
 
 export const CommentTypeDef = `
   type Comment {

@@ -1,6 +1,7 @@
 import { Profile } from "../models/profile";
 import { Post } from "../models/post";
 import { IsNull } from "typeorm";
+import { InternalServerError } from "../errors/internal-server-error";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -19,6 +20,7 @@ export const ProfileTypeDef = `
 
   extend type Mutation {
     updateProfile(profile: ProfileInput!): Profile!
+    updateExpoPushToken(token: String): Boolean!
   }
 
   type Profile {
@@ -42,18 +44,28 @@ export const ProfileTypeDef = `
 
 export const ProfileResolvers = {
   Query: {
-    profile: async(parent, args) => {
-      return await Profile.findOne(args.uid);
+    profile: (parent, args) => {
+      return Profile.findOne(args.uid);
     }
   },
   Profile: {
-    posts: async(profile: Profile) => {
-      return await Post.find({ where: { owner: profile, deletedAt: IsNull()}});
+    posts: (profile: Profile) => {
+      return Post.find({ where: { owner: profile, deletedAt: IsNull()}});
     }
   },
   Mutation: {
-    updateProfile: async(parent, args, context) => {
-      return await Profile.save({ ...args.profile, uid: context.user.uid });
+    updateProfile: (parent, args, context) => {
+      return Profile.save({ ...args.profile, uid: context.user.uid });
+    },
+    updateExpoPushToken: async(parent, args, context) => {
+      try {
+        await Profile.update({ uid: context.user.uid }, { expoPushToken: args.token });
+      } catch (error) {
+        console.log(error);
+        throw new InternalServerError("Error updating expo push token.");
+      }
+
+      return true;
     }
   }
 };

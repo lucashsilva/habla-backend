@@ -31,6 +31,9 @@ export class Profile extends BaseEntity {
     @Column({ nullable: true })
     photoURL: string;
 
+    @Column({ nullable: true })
+    expoPushToken: string;
+
     @OneToMany(type => Post, post => post.owner)
     posts: Post[];
 
