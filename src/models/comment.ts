@@ -1,27 +1,23 @@
 import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn, Index, OneToMany } from "typeorm";
 import { Profile } from "./profile";
 import { Post } from "./post";
-import { ApiModelProperty, ApiModel } from "swagger-express-ts";
 import { Notification } from "./notification";
 
-@ApiModel({ name: "Comment" })
 @Entity()
 export class Comment extends BaseEntity {
-    @ApiModelProperty()
     @PrimaryGeneratedColumn()
     id: number;
     
-    @ApiModelProperty({ required: true })
     @Column({ nullable: false })
     body: string;
 
-    @ManyToOne(type => Profile)
+    @ManyToOne(type => Profile, { onDelete: 'CASCADE' })
     owner: Profile;
 
     @Column({ nullable: true })
-    ownerUid: number;
+    ownerUid: string;
 
-    @ManyToOne(type => Post)
+    @ManyToOne(type => Post, { onDelete: 'CASCADE' })
     post: Post;
 
     @Column({ nullable: false })

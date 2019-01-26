@@ -3,8 +3,9 @@ import { getMaskedDistance } from "../util/geo";
 import { Profile } from "../models/profile";
 import { requireLocationInfo } from "../util/context";
 import { getConnection } from "typeorm";
-import { Notification, NotificationType } from "../models/notification";
 import { Post } from "../models/post";
+import { NotificationService } from "../services/notification";
+import { NotFoundError } from "../errors/http/not-found-error";
 
 export const CommentTypeDef = `
   type Comment {
@@ -32,9 +33,12 @@ export const CommentResolvers = {
       requireLocationInfo(context);
       
       let comment = args.comment;
-      let post = await Post.findOne(args.postId);
 
-      comment.post = post;
+      if (!await Post.count({ id: args.postId })) {
+        throw new NotFoundError("Invalid post id.");
+      }
+
+      comment.postId = args.postId;
 
       if (!args.anonymous) {
         comment.ownerUid = context.user.uid;
@@ -46,7 +50,7 @@ export const CommentResolvers = {
       await getConnection().transaction(async() => {
         comment = await Comment.create(comment).save();
 
-        if (post.ownerUid !== context.user.uid) await Notification.create({ comment: comment, type: NotificationType.COMMENT_ON_OWNED_POST, receiverUid: post.ownerUid }).save();
+        await NotificationService.notifyNewComent(comment);
       });
 
       return comment;

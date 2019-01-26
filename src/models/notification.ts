@@ -8,18 +8,18 @@ export class Notification extends BaseEntity {
     id: number;
     
     @Column({ nullable: false })
-    type: NotificationType;
+    type: CommentNotificationType; // add other types later
 
     @Column()
     commentId: number;
 
-    @ManyToOne(type => Comment, comment => comment.notifications)
+    @ManyToOne(type => Comment, comment => comment.notifications, { onDelete: 'CASCADE' })
     comment: Comment;
 
     @Column({ nullable: false })
     receiverUid: string;
 
-    @ManyToOne(type => Profile, profile => profile.notifications)
+    @ManyToOne(type => Profile, profile => profile.notifications, { onDelete: 'CASCADE' })
     receiver: Profile;
 
     @Column({ type: "timestamp with time zone", nullable: true })
@@ -32,6 +32,6 @@ export class Notification extends BaseEntity {
     updatedAt: Date;
 }
 
-export enum NotificationType {
+export enum CommentNotificationType {
     COMMENT_ON_OWNED_POST = 'COMMENT_ON_OWNED_POST'
 }
