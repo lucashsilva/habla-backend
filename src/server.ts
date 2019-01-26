@@ -1,5 +1,4 @@
 import * as bodyParser from 'body-parser';
-import * as swagger from 'swagger-express-ts';
 import * as http from 'http';
 import "reflect-metadata";
 import * as morgan from 'morgan';
@@ -15,8 +14,8 @@ import { Channel } from './models/channel';
 import { AppSchema } from './schema/schema';
 import { ProfileVotePost } from './models/profile-vote-post';
 import { ApolloServer } from 'apollo-server-express';
-import { getUserFromToken, requireAuthentication } from './services/firebase';
-import { AuthenticationError } from './errors/http/authentication-error';
+import { requireAuthentication } from './services/firebase';
+import { Notification } from './models/notification';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -25,20 +24,8 @@ const PORT = process.env.SERVER_PORT || 3000;
 
 const app = express();
 
-app.use('/api-docs/swagger', express.static('src/swagger'));
-app.use('/api-docs/swagger/assets', express.static('node_modules/swagger-ui-dist'));
-
 // config for express
 app.use(logger);
-
-app.use(swagger.express({
-    definition : {
-        info : {
-            title : "Habla API" ,
-            version : "1.0"
-        },
-    },
-}));
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -83,7 +70,8 @@ createConnection({
         Post,
         Comment, 
         Channel,
-        ProfileVotePost
+        ProfileVotePost,
+        Notification
     ]
 }).then(() => {
     httpServer.listen(PORT);

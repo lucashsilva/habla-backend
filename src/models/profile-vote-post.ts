@@ -10,10 +10,10 @@ export class ProfileVotePost extends BaseEntity {
     @PrimaryColumn()
     profileUid: number;
 
-    @ManyToOne(type => Post, post => post.profileVotePosts)
+    @ManyToOne(type => Post, post => post.profileVotePosts, { onDelete: 'CASCADE' })
     post: Post;
 
-    @ManyToOne(type => Profile, profile => profile.profileVotePosts)
+    @ManyToOne(type => Profile, profile => profile.profileVotePosts, { onDelete: 'CASCADE' })
     profile: Profile;
 
     @Column({ nullable: false })

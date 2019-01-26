@@ -6,8 +6,8 @@ import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { IsNull } from "typeorm";
 import { requireLocationInfo } from "../util/context";
-import { NotFoundError } from "../errors/http/not-found-error";
-import { AuthorizationError } from "../errors/http/authorization-error";
+import { NotFoundError } from "../errors/not-found-error";
+import { AuthorizationError } from "../errors/authorization-error";
 
 export const PostTypeDef = `
   extend type Query {

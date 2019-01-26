@@ -1,5 +1,5 @@
 import * as admin from 'firebase-admin';
-import { AuthenticationError } from '../errors/http/authentication-error';
+import { AuthenticationError } from '../errors/authentication-error';
 var serviceAccount = require("/secrets/firebase/service-account.json");
 
 admin.initializeApp({

@@ -2,6 +2,10 @@ import { Comment } from "../models/comment";
 import { getMaskedDistance } from "../util/geo";
 import { Profile } from "../models/profile";
 import { requireLocationInfo } from "../util/context";
+import { getConnection } from "typeorm";
+import { Post } from "../models/post";
+import { NotificationService } from "../services/notification";
+import { NotFoundError } from "../errors/not-found-error";
 
 export const CommentTypeDef = `
   type Comment {
@@ -10,6 +14,8 @@ export const CommentTypeDef = `
     createdAt: Date!
     distance: String!
     owner: Profile
+    post: Post!
+    postId: ID!
   }
 
   input CommentInput {
@@ -26,7 +32,11 @@ export const CommentResolvers = {
     createComment: async(parent, args, context) => {
       requireLocationInfo(context);
       
-      const comment = args.comment;
+      let comment = args.comment;
+
+      if (!await Post.count({ id: args.postId })) {
+        throw new NotFoundError("Invalid post id.");
+      }
 
       comment.postId = args.postId;
 
@@ -36,8 +46,14 @@ export const CommentResolvers = {
 
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       comment.location = location;
-  
-      return await Comment.create(comment).save();
+
+      await getConnection().transaction(async() => {
+        comment = await Comment.create(comment).save();
+
+        await NotificationService.notifyNewComent(comment);
+      });
+
+      return comment;
     }
   },
   Comment: {
@@ -46,8 +62,11 @@ export const CommentResolvers = {
 
       return getMaskedDistance({ latitude: comment.location.coordinates[0], longitude: comment.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
     },
-    owner: async(comment: Comment) => {
-      return comment.ownerUid? await Profile.findOne(comment.ownerUid): null;
+    owner: (comment: Comment) => {
+      return comment.ownerUid? Profile.findOne(comment.ownerUid): null;
+    },
+    post: (comment: Comment) => {
+      return Post.findOne(comment.postId);
     }
   }
 };
