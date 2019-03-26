@@ -12,9 +12,10 @@ const getUserFromToken = async(token: string) => {
         let user = {
             uid: (await admin.auth().verifyIdToken(token)).uid
         }
+        
         return user;
     } catch (error) {
-        throw new AuthenticationError({ message: 'Invalid token.' });
+        throw new AuthenticationError('Invalid token.');
     }
 }
 
@@ -23,11 +24,7 @@ const requireAuthentication = async(req) => {
         throw new AuthenticationError(`Missing 'Authorization' header.`);
     }
 
-    const user = await getUserFromToken(req.headers['authorization']);
-
-    if (!user) {
-        throw new AuthenticationError(`Invalid token.`);
-    }
+    let user = await getUserFromToken(req.headers['authorization']);
 
     return user;
 }
