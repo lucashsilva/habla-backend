@@ -75,7 +75,7 @@ export const ProfileResolvers = {
           }))[0];
         } catch (error) {
           console.log(JSON.stringify(error));
-          throw error;
+          throw new InternalServerError('Profile picture could not be saved.');
         }
       }
 
