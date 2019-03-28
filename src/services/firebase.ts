@@ -4,7 +4,8 @@ var serviceAccount = require("/secrets/firebase/service-account.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
+    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://habla-215902.firebaseio.com',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'habla-215902.appspot.com'
 });
 
 const getUserFromToken = async(token: string) => {
