@@ -4,7 +4,7 @@ import { requireLocationInfo } from "../util/context";
 import { Not, In } from "typeorm";
 export const ChannelTypeDef = `
   extend type Query {
-    channels(radius: Int, skip: Int, take: Int, ignoreIds: [Int!]): [Channel!]!
+    channels(radius: Int, searchString: String, skip: Int, take: Int, ignoreIds: [Int!]): [Channel!]!
   }
 
   input ChannelInput {
@@ -41,11 +41,10 @@ export const ChannelResolvers = {
                   .skip(args.skip)
                   .take(args.take)
                   .orderBy(`"postsCount"`, "DESC");
-      
-      args.ignoreIds && args.ignoreIds.length && query.where({
-        id: Not(In(args.ignoreIds))
-      });
 
+      args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) });
+      args.searchString && query.andWhere(`channel.name ILIKE '%${args.searchString}%'`);
+      
       const rawAndEntities = await query.getRawAndEntities();
 
       return rawAndEntities.entities.map((entity, index) => {
