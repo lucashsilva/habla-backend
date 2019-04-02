@@ -2,6 +2,7 @@ import { Profile } from "../models/profile";
 import { Post } from "../models/post";
 import { IsNull } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
+import { NotFoundError } from "../errors/not-found-error";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -44,8 +45,14 @@ export const ProfileTypeDef = `
 
 export const ProfileResolvers = {
   Query: {
-    profile: (parent, args) => {
-      return Profile.findOne(args.uid);
+    profile: async(parent, args) => {
+      let profile = await Profile.findOne(args.uid);
+
+      if (profile) {
+        return profile;
+      } else {
+        throw new NotFoundError('Profile not found.');
+      }
     }
   },
   Profile: {
@@ -54,8 +61,10 @@ export const ProfileResolvers = {
     }
   },
   Mutation: {
-    updateProfile: (parent, args, context) => {
-      return Profile.save({ ...args.profile, uid: context.user.uid });
+    updateProfile: async(parent, args, context) => {
+      await Profile.save({ ...args.profile, uid: context.user.uid });
+
+      return Profile.findOne(context.user.uid);
     },
     updateExpoPushToken: async(parent, args, context) => {
       try {
