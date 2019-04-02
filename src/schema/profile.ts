@@ -2,6 +2,8 @@ import { Profile } from "../models/profile";
 import { Post } from "../models/post";
 import { IsNull } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
+import * as admin from 'firebase-admin';
+import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -15,11 +17,10 @@ export const ProfileTypeDef = `
     website: String
     phone: String
     gender: Gender
-    photoURL: String
   }
 
   extend type Mutation {
-    updateProfile(profile: ProfileInput!): Profile!
+    updateProfile(profile: ProfileInput!, photo: Upload): Profile!
     updateExpoPushToken(token: String): Boolean!
   }
 
@@ -54,8 +55,31 @@ export const ProfileResolvers = {
     }
   },
   Mutation: {
-    updateProfile: (parent, args, context) => {
-      return Profile.save({ ...args.profile, uid: context.user.uid });
+    updateProfile: async(parent, args, context) => {
+      let photoURL;
+
+      if (args.photo) {
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}-original`);
+
+        try {
+          let file = admin.storage().bucket().file(`profile-photos/${photoData.fileName}`);
+          
+          await file.save(photoData.buffer, { 
+            metadata: { contentType: photoData.mimeType },
+            validation: 'md5'
+          });
+
+          photoURL = (await file.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491'
+          }))[0];
+        } catch (error) {
+          console.log(JSON.stringify(error));
+          throw new InternalServerError('Profile picture could not be saved.');
+        }
+      }
+
+      return Profile.save({ ...args.profile, uid: context.user.uid, photoURL: photoURL });
     },
     updateExpoPushToken: async(parent, args, context) => {
       try {
