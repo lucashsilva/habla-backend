@@ -4,7 +4,7 @@ import { requireLocationInfo } from "../util/context";
 import { Not, In } from "typeorm";
 export const ChannelTypeDef = `
   extend type Query {
-    channels(radius: Int, searchString: String, skip: Int, take: Int, ignoreIds: [Int!]): [Channel!]!
+    channels(radius: Int, searchString: String, limit: Int, ignoreIds: [ID!]): [Channel!]!
   }
 
   input ChannelInput {
@@ -38,8 +38,7 @@ export const ChannelResolvers = {
                                          .where("post.channelId = channel.id")
                                          .andWhere(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
                                          .getQuery(), "postsCount")
-                  .skip(args.skip)
-                  .take(args.take)
+                  .limit(args.limit || 20)
                   .orderBy(`"postsCount"`, "DESC");
 
       args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) });
