@@ -31,7 +31,11 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.use(bodyParser.json());
+app.use(bodyParser.json(
+    {
+        limit: '10mb'
+    }
+));
 
 app.use(cors({ 
     origin: '*',
@@ -40,7 +44,11 @@ app.use(cors({
 
 const server = new ApolloServer({ 
     typeDefs: AppSchema.typeDefs, 
-    resolvers: AppSchema.resolvers, 
+    resolvers: AppSchema.resolvers,
+    uploads: {
+        maxFieldSize: 10000000,
+        maxFileSize: 10000000
+    },
     context: async({ req }) => {
         const location = { latitude: req.headers['latitude'], longitude: req.headers['longitude'] };
         

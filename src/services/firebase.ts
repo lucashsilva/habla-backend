@@ -4,7 +4,8 @@ var serviceAccount = require("/secrets/firebase/service-account.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL
+    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://habla-215902.firebaseio.com',
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'habla-215902.appspot.com'
 });
 
 const getUserFromToken = async(token: string) => {
@@ -12,9 +13,10 @@ const getUserFromToken = async(token: string) => {
         let user = {
             uid: (await admin.auth().verifyIdToken(token)).uid
         }
+        
         return user;
     } catch (error) {
-        throw new AuthenticationError({ message: 'Invalid token.' });
+        throw new AuthenticationError('Invalid token.');
     }
 }
 
@@ -23,11 +25,7 @@ const requireAuthentication = async(req) => {
         throw new AuthenticationError(`Missing 'Authorization' header.`);
     }
 
-    const user = await getUserFromToken(req.headers['authorization']);
-
-    if (!user) {
-        throw new AuthenticationError(`Invalid token.`);
-    }
+    let user = await getUserFromToken(req.headers['authorization']);
 
     return user;
 }
