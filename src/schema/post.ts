@@ -4,14 +4,14 @@ import { Comment } from "../models/comment";
 import { Channel } from "../models/channel";
 import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
-import { IsNull } from "typeorm";
+import { IsNull, Not, In } from "typeorm";
 import { requireLocationInfo } from "../util/context";
 import { NotFoundError } from "../errors/not-found-error";
 import { AuthorizationError } from "../errors/authorization-error";
 
 export const PostTypeDef = `
   extend type Query {
-    posts(radius: Float, channelId: ID, skip: Int, take: Int): [Post!]!
+    posts(radius: Float, channelId: ID, limit: Int, ignoreIds: [ID!]): [Post!]!
     post(id: ID!): Post
   }
 
@@ -46,13 +46,11 @@ export const PostResolvers = {
 
       const query = Post.createQueryBuilder("post")
                         .where(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
-                        .skip(args.skip)
-                        .take(args.take)
+                        .limit(args.limit || 20)
                         .orderBy("post.createdAt", "DESC");
-
-      if (args.channelId) {
-        query.andWhere(`post.channelId = ${args.channelId}`);
-      }
+      
+      args.channelId && query.andWhere(`post.channelId = ${args.channelId}`);
+      args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) });
       
       return query.getMany();
     },
