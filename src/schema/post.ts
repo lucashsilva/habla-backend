@@ -38,7 +38,7 @@ export const PostTypeDef = `
     comments: [Comment!]!
     commentsCount: Int!
     rate: Int!
-    profilePostVote: PostVotePostVote
+    profilePostVote: PostVote
     photoURL: String
   }
 `;
