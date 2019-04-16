@@ -8,7 +8,7 @@ import { IsNull, Not, In } from "typeorm";
 import { requireLocationInfo } from "../util/context";
 import { NotFoundError } from "../errors/not-found-error";
 import { AuthorizationError } from "../errors/authorization-error";
-import { ProfileScoreRecord } from "../models/profile-score-record";
+import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 
 export const PostTypeDef = `
   extend type Query {
@@ -105,9 +105,9 @@ export const PostResolvers = {
       post = await Post.create(post).save();
 
       if (!args.anonymous) {
-        await ProfileScoreRecord.create({ type: 'CREATED_PUBLIC_POST', profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
       } else {
-        await ProfileScoreRecord.create({ type: 'CREATED_ANONYMOUS_POST', profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
       }
 
       return post;
