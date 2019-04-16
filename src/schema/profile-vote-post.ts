@@ -1,6 +1,8 @@
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { Post } from "../models/post";
 import { Profile } from "../models/profile";
+import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
+import { Equal } from "typeorm";
 
 export const ProfileVotePostTypeDef = `
   extend type Mutation {
@@ -37,7 +39,17 @@ export const ProfileVotePostResolvers = {
 
       pvp.type = type;
       
-      return await pvp.save();
+      await pvp.save();
+
+      const scoreRecord = await ProfileScoreRecord.createQueryBuilder("record")
+                                                  .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
+                                                  .getCount();
+                                                  
+      if (!scoreRecord) {
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.VOTED_POST, profileUid: context.user.uid, postId, value: ProfileScoreRecord.POINTS.VOTED_POST }).save();
+      }
+
+      return pvp;
     }
   }
 };
