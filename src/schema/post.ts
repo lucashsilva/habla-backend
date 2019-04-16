@@ -104,7 +104,11 @@ export const PostResolvers = {
 
       post = await Post.create(post).save();
 
-      await ProfileScoreRecord.create({ type: 'CREATED_POST', profileUid: context.user.uid, post, value: 2 }).save();
+      if (!args.anonymous) {
+        await ProfileScoreRecord.create({ type: 'CREATED_PUBLIC_POST', profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
+      } else {
+        await ProfileScoreRecord.create({ type: 'CREATED_ANONYMOUS_POST', profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
+      }
 
       return post;
     },

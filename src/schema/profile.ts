@@ -1,6 +1,6 @@
 import { Profile } from "../models/profile";
 import { Post } from "../models/post";
-import { IsNull, Equal, Brackets } from "typeorm";
+import { IsNull, Equal, Brackets, MoreThan } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
 import { NotFoundError } from "../errors/not-found-error";
 import * as admin from 'firebase-admin';
@@ -37,6 +37,7 @@ export const ProfileTypeDef = `
     posts: [Post!]!
     photoURL: String
     score: Int!
+    scoreBalance: Int!
   }
 
   enum Gender {
@@ -65,12 +66,18 @@ export const ProfileResolvers = {
     score: async(profile: Profile, args, context) => {
       const result = await ProfileScoreRecord.createQueryBuilder("record")
                                 .select("SUM(value)", "score")
-                                .where(new Brackets(qb => {
-                                  return { profileUid: Equal(context.user.uid) };
-                                }))
+                                .where({ profileUid: Equal(context.user.uid), value: MoreThan(0)})
+                                .getRawOne();
+                                
+      return result.score || 0;
+    },
+    scoreBalance: async(profile: Profile, args, context) => {
+      const result = await ProfileScoreRecord.createQueryBuilder("record")
+                                .select("SUM(value)", "scoreBalance")
+                                .where({ profileUid: Equal(context.user.uid) })
                                 .getRawOne();
 
-      return result.score || 0;
+      return result.scoreBalance || 0;
     }
   },
   Mutation: {

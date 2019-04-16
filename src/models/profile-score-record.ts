@@ -14,7 +14,7 @@ export class ProfileScoreRecord extends BaseEntity {
     value: number;
 
     @Column()
-    type: 'CREATED_POST' | 'COMMENTED_POST';
+    type: 'CREATED_PUBLIC_POST' | 'CREATED_ANONYMOUS_POST' | 'COMMENTED_POST';
 
     @Column({ nullable: true })
     commentId: number;
@@ -30,4 +30,10 @@ export class ProfileScoreRecord extends BaseEntity {
 
     @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
+
+    static POINTS: {
+        CREATED_PUBLIC_POST: 2,
+        CREATED_ANONYMOUS_POST: -10,
+        COMMENTED_POST: 1
+    }
 }

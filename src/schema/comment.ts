@@ -51,7 +51,7 @@ export const CommentResolvers = {
       await getConnection().transaction(async() => {
         comment = await Comment.create(comment).save();
 
-        await ProfileScoreRecord.create({ type: 'COMMENTED_POST', profileUid: context.user.uid, comment, value: 1 }).save();
+        await ProfileScoreRecord.create({ type: 'COMMENTED_POST', profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST }).save();
 
         await NotificationService.notifyNewComent(comment);
       });
