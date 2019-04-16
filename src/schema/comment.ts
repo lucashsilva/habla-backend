@@ -6,6 +6,7 @@ import { getConnection } from "typeorm";
 import { Post } from "../models/post";
 import { NotificationService } from "../services/notification";
 import { NotFoundError } from "../errors/not-found-error";
+import { ProfileScoreRecord } from "../models/profile-score-record";
 
 export const CommentTypeDef = `
   type Comment {
@@ -49,6 +50,8 @@ export const CommentResolvers = {
 
       await getConnection().transaction(async() => {
         comment = await Comment.create(comment).save();
+
+        await ProfileScoreRecord.create({ type: 'COMMENTED_POST', profileUid: context.user.uid, comment, value: 1 }).save();
 
         await NotificationService.notifyNewComent(comment);
       });
