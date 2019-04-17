@@ -8,6 +8,9 @@ import { IsNull, Not, In } from "typeorm";
 import { requireLocationInfo } from "../util/context";
 import { NotFoundError } from "../errors/not-found-error";
 import { AuthorizationError } from "../errors/authorization-error";
+import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
+import * as admin from 'firebase-admin';
+import { InternalServerError } from "../errors/internal-server-error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 
 export const PostTypeDef = `
@@ -21,7 +24,7 @@ export const PostTypeDef = `
   }
 
   extend type Mutation {
-    createPost(channelId: ID, post: PostInput!, anonymous: Boolean): Post!
+    createPost(channelId: ID, post: PostInput!, anonymous: Boolean, photo: Upload): Post!
     deletePost(postId: ID!): Boolean!
   }
 
@@ -37,6 +40,7 @@ export const PostTypeDef = `
     commentsCount: Int!
     rate: Int!
     profilePostVote: PostVote
+    photoURL: String
   }
 `;
 
@@ -101,6 +105,31 @@ export const PostResolvers = {
 
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
+
+      let photoURL;
+
+      if (args.photo) {
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}-original`);
+
+        try {
+          let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
+          
+          await file.save(photoData.buffer, { 
+            metadata: { contentType: photoData.mimeType },
+            validation: 'md5'
+          });
+
+          photoURL = (await file.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491'
+          }))[0];
+        } catch (error) {
+          console.log(JSON.stringify(error));
+          throw new InternalServerError('Post picture could not be saved.');
+        }
+      }
+
+      post.photoURL = photoURL;
 
       post = await Post.create(post).save();
 
