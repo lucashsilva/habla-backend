@@ -23,7 +23,7 @@ export const PostTypeDef = `
   }
 
   extend type Mutation {
-    createPost(channelId: ID, post: PostInput!, anonymous: Boolean): Post!
+    createPost(channelId: ID, post: PostInput!, anonymous: Boolean, photo: Upload): Post!
     deletePost(postId: ID!): Boolean!
   }
 
@@ -90,9 +90,6 @@ export const PostResolvers = {
     },
     profilePostVote: async(post: Post, args, context) => {
       return await ProfileVotePost.findOne({ postId: post.id, profileUid: context.user.uid });
-    },
-    photoURL: async(post: Post) =>{
-      return await post.photoURL;
     }
   },
   Mutation: {
