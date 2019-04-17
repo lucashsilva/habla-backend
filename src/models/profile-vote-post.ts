@@ -8,7 +8,7 @@ export class ProfileVotePost extends BaseEntity {
     postId: number;
 
     @PrimaryColumn()
-    profileUid: number;
+    profileUid: string;
 
     @ManyToOne(type => Post, post => post.profileVotePosts, { onDelete: 'CASCADE' })
     post: Post;
