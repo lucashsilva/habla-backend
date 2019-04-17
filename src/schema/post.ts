@@ -8,6 +8,7 @@ import { IsNull, Not, In } from "typeorm";
 import { requireLocationInfo } from "../util/context";
 import { NotFoundError } from "../errors/not-found-error";
 import { AuthorizationError } from "../errors/authorization-error";
+import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 
 export const PostTypeDef = `
   extend type Query {
@@ -90,7 +91,7 @@ export const PostResolvers = {
     createPost: async(parent, args, context) => {
       requireLocationInfo(context);
 
-      const post = args.post;
+      let post = args.post;
 
       if (!args.anonymous) {
         post.ownerUid = context.user.uid;
@@ -101,7 +102,15 @@ export const PostResolvers = {
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
 
-      return await Post.create(post).save();
+      post = await Post.create(post).save();
+
+      if (!args.anonymous) {
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
+      } else {
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
+      }
+
+      return post;
     },
     deletePost: async(parent, args, context) => {
       let post = await Post.findOne(args.postId);

@@ -1,12 +1,14 @@
 import { Profile } from "../models/profile";
 import { Post } from "../models/post";
-import { IsNull } from "typeorm";
+import { IsNull, Equal, Brackets, MoreThan } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
 import { NotFoundError } from "../errors/not-found-error";
 import { LocationError } from "../errors/location-error";
 import * as admin from 'firebase-admin';
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 import { requireLocationInfo } from "../util/context";
+import { ProfileScoreRecord } from "../models/profile-score-record";
+
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -38,6 +40,8 @@ export const ProfileTypeDef = `
     posts: [Post!]!
     photoURL: String
     home: [Int]
+    score: Int!
+    scoreBalance: Int!
   }
 
   enum Gender {
@@ -61,7 +65,26 @@ export const ProfileResolvers = {
   },
   Profile: {
     posts: (profile: Profile) => {
+
       return Post.find({ where: { owner: profile, deletedAt: IsNull() } });
+
+    },
+    score: async(profile: Profile, args, context) => {
+      const result = await ProfileScoreRecord.createQueryBuilder("record")
+                                .select("SUM(value)", "score")
+                                .where({ profileUid: Equal(context.user.uid), value: MoreThan(0)})
+                                .getRawOne();
+                                
+      return result.score || 0;
+    },
+    scoreBalance: async(profile: Profile, args, context) => {
+      const result = await ProfileScoreRecord.createQueryBuilder("record")
+                                .select("SUM(value)", "scoreBalance")
+                                .where({ profileUid: Equal(context.user.uid) })
+                                .getRawOne();
+
+      return result.scoreBalance || 0;
+
     }
   },
   Mutation: {

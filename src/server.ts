@@ -16,6 +16,7 @@ import { ProfileVotePost } from './models/profile-vote-post';
 import { ApolloServer } from 'apollo-server-express';
 import { requireAuthentication } from './services/firebase';
 import { Notification } from './models/notification';
+import { ProfileScoreRecord } from './models/profile-score-record';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -79,7 +80,8 @@ createConnection({
         Comment, 
         Channel,
         ProfileVotePost,
-        Notification
+        Notification,
+        ProfileScoreRecord
     ]
 }).then(() => {
     httpServer.listen(PORT);
