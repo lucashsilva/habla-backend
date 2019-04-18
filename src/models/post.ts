@@ -46,4 +46,7 @@ export class Post extends BaseEntity {
 
     @Column({ type: "timestamp with time zone", nullable: true })
     deletedAt: Date;
+
+    @Column({ nullable: true })
+    photoURL: string;
 }
