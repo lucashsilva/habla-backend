@@ -64,7 +64,9 @@ export const ProfileResolvers = {
   },
   Profile: {
     posts: (profile: Profile) => {
+
       return Post.find({ where: { owner: profile, deletedAt: IsNull() } });
+
     },
     home: (profile: Profile) => {
       return profile.home && [profile.home.coordinates.latitude, profile.home.coordinates.longitude]
@@ -84,6 +86,7 @@ export const ProfileResolvers = {
         .getRawOne();
 
       return result.scoreBalance || 0;
+
     }
   },
   Mutation: {
