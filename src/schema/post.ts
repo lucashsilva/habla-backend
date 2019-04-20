@@ -96,7 +96,6 @@ export const PostResolvers = {
       requireLocationInfo(context);
 
       let post = args.post;
-
       if (!args.anonymous) {
         post.ownerUid = context.user.uid;
       } 
@@ -109,7 +108,7 @@ export const PostResolvers = {
       let photoURL;
 
       if (args.photo) {
-        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}-original`);
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${args.post.body}`+`-original`);
 
         try {
           let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
