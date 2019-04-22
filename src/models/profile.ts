@@ -16,6 +16,14 @@ export class Profile extends BaseEntity {
     @Column()
     name: string;
 
+    @Column("geometry", {
+        spatialFeatureType: "Point",
+        srid: 4326,
+        nullable: true
+    })
+    @Index({ spatial: true })
+    home: any;
+
     @Column({ nullable: true })
     bio: string;
 

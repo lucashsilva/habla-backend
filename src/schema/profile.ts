@@ -3,8 +3,10 @@ import { Post } from "../models/post";
 import { IsNull, Equal, Brackets, MoreThan } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
 import { NotFoundError } from "../errors/not-found-error";
+import { LocationError } from "../errors/location-error";
 import * as admin from 'firebase-admin';
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
+import { requireLocationInfo } from "../util/context";
 import { ProfileScoreRecord } from "../models/profile-score-record";
 
 export const ProfileTypeDef = `
@@ -22,7 +24,7 @@ export const ProfileTypeDef = `
   }
 
   extend type Mutation {
-    updateProfile(profile: ProfileInput!, photo: Upload): Profile!
+    updateProfile(profile: ProfileInput!, photo: Upload, updateHome: Boolean): Profile!
     updateExpoPushToken(token: String): Boolean!
   }
 
@@ -36,6 +38,7 @@ export const ProfileTypeDef = `
     gender: Gender
     posts: [Post!]!
     photoURL: String
+    home: [Int]
     score: Int!
     scoreBalance: Int!
   }
@@ -49,7 +52,7 @@ export const ProfileTypeDef = `
 
 export const ProfileResolvers = {
   Query: {
-    profile: async(parent, args) => {
+    profile: async (parent, args) => {
       let profile = await Profile.findOne(args.uid);
 
       if (profile) {
@@ -61,36 +64,52 @@ export const ProfileResolvers = {
   },
   Profile: {
     posts: (profile: Profile) => {
-      return Post.find({ where: { owner: profile, deletedAt: IsNull()}});
+
+      return Post.find({ where: { owner: profile, deletedAt: IsNull() } });
+
     },
-    score: async(profile: Profile, args, context) => {
+    home: (profile: Profile) => {
+      return profile.home && profile.home.coordinates;
+    },
+    score: async (profile: Profile, args, context) => {
       const result = await ProfileScoreRecord.createQueryBuilder("record")
-                                .select("SUM(value)", "score")
-                                .where({ profileUid: Equal(context.user.uid), value: MoreThan(0)})
-                                .getRawOne();
-                                
+        .select("SUM(value)", "score")
+        .where({ profileUid: Equal(context.user.uid), value: MoreThan(0) })
+        .getRawOne();
+
       return result.score || 0;
     },
-    scoreBalance: async(profile: Profile, args, context) => {
+    scoreBalance: async (profile: Profile, args, context) => {
       const result = await ProfileScoreRecord.createQueryBuilder("record")
-                                .select("SUM(value)", "scoreBalance")
-                                .where({ profileUid: Equal(context.user.uid) })
-                                .getRawOne();
+        .select("SUM(value)", "scoreBalance")
+        .where({ profileUid: Equal(context.user.uid) })
+        .getRawOne();
 
       return result.scoreBalance || 0;
+
     }
   },
   Mutation: {
-    updateProfile: async(parent, args, context) => {
+    updateProfile: async (parent, args, context) => {
       let photoURL;
+      let location;
+      if (args.updateHome) {
+        try {
+          requireLocationInfo(context);
+          location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
+        } catch (error) {
+          console.log(JSON.stringify(error));
+          throw new LocationError('Home could not be saved.');
+        }
+      }
 
       if (args.photo) {
         let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}-original`);
 
         try {
           let file = admin.storage().bucket().file(`profile-photos/${photoData.fileName}`);
-          
-          await file.save(photoData.buffer, { 
+
+          await file.save(photoData.buffer, {
             metadata: { contentType: photoData.mimeType },
             validation: 'md5'
           });
@@ -105,11 +124,10 @@ export const ProfileResolvers = {
         }
       }
 
-      await Profile.save({ ...args.profile, uid: context.user.uid, photoURL: photoURL });
-    
+      await Profile.save({ ...args.profile, uid: context.user.uid, photoURL: photoURL, home: location });
       return Profile.findOne(context.user.uid);
     },
-    updateExpoPushToken: async(parent, args, context) => {
+    updateExpoPushToken: async (parent, args, context) => {
       try {
         await Profile.update({ uid: context.user.uid }, { expoPushToken: args.token });
       } catch (error) {
