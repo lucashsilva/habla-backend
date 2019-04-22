@@ -69,7 +69,7 @@ export const ProfileResolvers = {
 
     },
     home: (profile: Profile) => {
-      return profile.home && [profile.home.coordinates.latitude, profile.home.coordinates.longitude]
+      return profile.home && profile.home.coordinates;
     },
     score: async (profile: Profile, args, context) => {
       const result = await ProfileScoreRecord.createQueryBuilder("record")
