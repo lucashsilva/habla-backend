@@ -105,10 +105,18 @@ export const PostResolvers = {
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
 
-      let photoURL;
+      post = await Post.create(post).save();
 
+      if (!args.anonymous) {
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
+      } else {
+        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
+      }
+
+      let photoURL;
+      
       if (args.photo) {
-        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${args.post.body}`+`-original`);
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${post.id}`+`-original`);
 
         try {
           let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
@@ -127,18 +135,8 @@ export const PostResolvers = {
           throw new InternalServerError('Post picture could not be saved.');
         }
       }
-
-      post.photoURL = photoURL;
-
-      post = await Post.create(post).save();
-
-      if (!args.anonymous) {
-        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
-      } else {
-        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
-      }
-
-      return post;
+      await Post.update({id: post.id}, {photoURL: photoURL})
+      return await Post.findOne(post.id);
     },
     deletePost: async(parent, args, context) => {
       let post = await Post.findOne(args.postId);
