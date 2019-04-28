@@ -137,13 +137,19 @@ export const PostResolvers = {
       }
 
       post.photoURL = photoURL;
-      
-      post.channels = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g).map(h => {
-        const channel = new Channel();
-        channel.name = h.substr(1);
 
-        return channel;
-      });
+      post.channels = [];
+      
+      await Promise.all(post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g).map(async h => {
+        const name = h.substr(1);
+        let channel = await Channel.findOne({ name });
+
+        if (!channel) {
+          channel = await Channel.create({ name }).save();
+        }
+
+        post.channels.push(channel);
+      }));
 
       post = await post.save();
 
