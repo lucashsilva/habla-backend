@@ -20,7 +20,7 @@ export class Post extends BaseEntity {
     @Index({ spatial: true })
     location: any;
 
-    @ManyToMany(type => Channel)
+    @ManyToMany(type => Channel, { cascade: ['insert'] })
     @JoinTable({ name: 'post_map_channel' })
     channels: Channel[];
 

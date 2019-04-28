@@ -104,13 +104,11 @@ export const PostResolvers = {
     createPost: async(parent, args, context) => {
       requireLocationInfo(context);
 
-      let post = args.post;
+      let post: Post = await Post.create(args.post);
       
       if (!args.anonymous) {
         post.ownerUid = context.user.uid;
       } 
-
-      // post.channelId = args.channelId;
 
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
@@ -139,8 +137,15 @@ export const PostResolvers = {
       }
 
       post.photoURL = photoURL;
+      
+      post.channels = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g).map(h => {
+        const channel = new Channel();
+        channel.name = h.substr(1);
 
-      post = await Post.create(post).save();
+        return channel;
+      });
+
+      post = await post.save();
 
       if (!args.anonymous) {
         await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();

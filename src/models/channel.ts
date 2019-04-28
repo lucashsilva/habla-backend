@@ -1,10 +1,11 @@
-import { Column, Entity, BaseEntity, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, BaseEntity, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from "typeorm";
 
 @Entity()
 export class Channel extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Index()
     @Column({ unique: true })
     name: string;
 
