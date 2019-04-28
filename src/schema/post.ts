@@ -4,7 +4,7 @@ import { Comment } from "../models/comment";
 import { Channel } from "../models/channel";
 import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
-import { IsNull, Not, In, Brackets } from "typeorm";
+import { IsNull, Not, In } from "typeorm";
 import { requireLocationInfo } from "../util/context";
 import { NotFoundError } from "../errors/not-found-error";
 import { AuthorizationError } from "../errors/authorization-error";
@@ -113,10 +113,12 @@ export const PostResolvers = {
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
 
-      let photoURL;
+      post = await Post.create(post).save();
 
+      let photoURL;
+      
       if (args.photo) {
-        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${args.post.body}`+`-original`);
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${post.id}`+`-original`);
 
         try {
           let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
@@ -139,8 +141,10 @@ export const PostResolvers = {
       post.photoURL = photoURL;
 
       post.channels = [];
+
+      let hashtags = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g);
       
-      await Promise.all(post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g).map(async h => {
+      if (hashtags && hashtags.length) await Promise.all(hashtags.map(async h => {
         const name = h.substr(1);
         let channel = await Channel.findOne({ name });
 
