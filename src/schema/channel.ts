@@ -7,14 +7,6 @@ export const ChannelTypeDef = `
     channels(radius: Int, searchString: String, limit: Int, ignoreIds: [ID!]): [Channel!]!
   }
 
-  input ChannelInput {
-    name: String!
-  }
-
-  extend type Mutation {
-    createChannel(channel: ChannelInput!): Channel!
-  }
-
   type Channel {
     id: ID!
     name: String!
@@ -49,16 +41,6 @@ export const ChannelResolvers = {
       return rawAndEntities.entities.map((entity, index) => {
         return { postsCount: rawAndEntities.raw[index].postsCount, ... entity };
       });
-    }
-  },
-  Mutation: {
-    createChannel: async(parent, args) => {
-      return await Channel.create(args.channel).save(); 
-    }
-  },
-  Channel: {
-    posts: async(channel: Channel) => {
-      return await Post.find({ where: { channel: channel }, order: { createdAt: 'DESC' }});
     }
   }
 };

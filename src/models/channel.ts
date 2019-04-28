@@ -1,5 +1,4 @@
-import { Column, Entity, BaseEntity, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany } from "typeorm";
-import { Post } from "./post";
+import { Column, Entity, BaseEntity, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Channel extends BaseEntity {
@@ -8,9 +7,6 @@ export class Channel extends BaseEntity {
 
     @Column({ unique: true })
     name: string;
-
-    @OneToMany(type => Post, post => post.channel)
-    posts: Post[];
 
     @CreateDateColumn({ type: "timestamp with time zone"})
     createdAt: Date;
