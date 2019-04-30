@@ -1,4 +1,4 @@
-import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany, Index } from "typeorm";
+import { Column, Entity, BaseEntity, ManyToOne, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, OneToMany, Index, ManyToMany, JoinTable } from "typeorm";
 import { Channel } from "./channel";
 import { Profile } from "./profile";
 import { Comment } from "./comment";
@@ -20,11 +20,9 @@ export class Post extends BaseEntity {
     @Index({ spatial: true })
     location: any;
 
-    @ManyToOne(type => Channel, channel => channel.posts, { onDelete: 'CASCADE' })
-    channel: Channel;
-
-    @Column({ nullable: true })
-    channelId: number;
+    @ManyToMany(type => Channel, { cascade: ['insert'] })
+    @JoinTable({ name: 'post_map_channel' })
+    channels: Channel[];
 
     @ManyToOne(type => Profile, profile => profile.posts, { nullable: true, onDelete: 'CASCADE' })
     owner: Profile;

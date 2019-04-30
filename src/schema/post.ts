@@ -13,6 +13,7 @@ import * as admin from 'firebase-admin';
 import { InternalServerError } from "../errors/internal-server-error";
 import { InsufficentScoreError } from "../errors/insufficent_score_error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
+import { PostMapChannel } from "../models/post-map-channel";
 
 export const PostTypeDef = `
   extend type Query {
@@ -36,7 +37,7 @@ export const PostTypeDef = `
     createdAt: Date!
     anonymous: Boolean!
     owner: Profile
-    channel: Channel
+    channels: [Channel!]!
     comments: [Comment!]!
     commentsCount: Int!
     rate: Int!
@@ -51,12 +52,17 @@ export const PostResolvers = {
       requireLocationInfo(context);
 
       const query = Post.createQueryBuilder("post")
-        .where(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`)
-        .limit(args.limit || 20)
-        .orderBy("post.createdAt", "DESC");
+                        .limit(args.limit || 20)
+                        .orderBy("post.createdAt", "DESC");
 
-      args.channelId && query.andWhere(`post.channelId = ${args.channelId}`);
-      args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) });
+      args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) }); // andWhere is not working with object literals so let's use where
+
+      query.andWhere(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`);
+
+      args.channelId && query.andWhere(qb => `EXISTS${qb.subQuery()
+                                                        .from(PostMapChannel, "pmc")
+                                                        .where(`post.id = pmc.postId AND pmc."channelId" = ${args.channelId}`)
+                                                        .getQuery()}`);
 
       return query.getMany();
     },
@@ -74,8 +80,11 @@ export const PostResolvers = {
     comments: async (post: Post) => {
       return await Comment.find({ where: { post: post }, order: { createdAt: 'DESC' } });
     },
-    channel: async (post: Post) => {
-      return post.channelId ? await Channel.findOne(post.channelId) : null;
+    channels: async(post: Post) => {
+      return await Post.createQueryBuilder()
+                       .relation(Post, "channels")
+                       .of(post)
+                       .loadMany();
     },
     distance: (post, args, context) => {
       requireLocationInfo(context);
@@ -96,7 +105,8 @@ export const PostResolvers = {
     createPost: async (parent, args, context) => {
       requireLocationInfo(context);
 
-      let post = args.post;
+      let post: Post = await Post.create(args.post);
+      
       if (!args.anonymous) {
         post.ownerUid = context.user.uid;
       } else {
@@ -111,15 +121,16 @@ export const PostResolvers = {
         }
       }
 
-      post.channelId = args.channelId;
-
-      const location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
+      const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       post.location = location;
 
-      let photoURL;
+      post = await Post.create(post).save();
 
+      let photoURL;
+      
       if (args.photo) {
-        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}` + `${args.post.body}` + `-original`);
+
+        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${post.id}`+`-original`);
 
         try {
           let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
@@ -141,7 +152,22 @@ export const PostResolvers = {
 
       post.photoURL = photoURL;
 
-      post = await Post.create(post).save();
+      post.channels = [];
+
+      let hashtags = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g);
+      
+      if (hashtags && hashtags.length) await Promise.all(hashtags.map(async h => {
+        const name = h.substr(1);
+        let channel = await Channel.findOne({ name });
+
+        if (!channel) {
+          channel = await Channel.create({ name }).save();
+        }
+
+        post.channels.push(channel);
+      }));
+
+      post = await post.save();
 
       if (!args.anonymous) {
         await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
