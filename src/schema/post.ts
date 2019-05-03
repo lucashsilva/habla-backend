@@ -23,10 +23,11 @@ export const PostTypeDef = `
 
   input PostInput {
     body: String!
+    anonymous: Boolean!
   }
 
   extend type Mutation {
-    createPost(channelId: ID, post: PostInput!, anonymous: Boolean, photo: Upload): Post!
+    createPost(channelId: ID, post: PostInput!, photo: Upload): Post!
     deletePost(postId: ID!): Boolean!
   }
 
@@ -35,7 +36,6 @@ export const PostTypeDef = `
     body: String!
     distance: String!
     createdAt: Date!
-    anonymous: Boolean!
     owner: Profile
     channels: [Channel!]!
     comments: [Comment!]!
