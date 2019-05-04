@@ -189,19 +189,15 @@ export const PostResolvers = {
     },
     deletePost: async (parent, args, context) => {
       let post = await Post.findOne(args.postId);
-
-      await getConnection().transaction(async transactionalEntityManager => {
-        if (!post) {
-          throw new NotFoundError();
-        } else if (post.ownerUid !== context.user.uid) {
-          throw new AuthorizationError();
-        } else {
-          await transactionalEntityManager.delete(Post, post);
-          //post.deletedAt = new Date(Date.now());
-          //await post.save();
-          return true;
-        }
-      });
+      if (!post) {
+        throw new NotFoundError();
+      } else if (post.ownerUid !== context.user.uid) {
+        throw new AuthorizationError();
+      } else {
+        post.deletedAt = new Date(Date.now());
+        await post.save();
+        return true;
+      }
     }
   }
 };
