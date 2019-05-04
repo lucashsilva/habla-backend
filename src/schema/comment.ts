@@ -48,10 +48,14 @@ export const CommentResolvers = {
       const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
       comment.location = location;
 
-      await getConnection().transaction(async() => {
-        comment = await Comment.create(comment).save();
+      await getConnection().transaction(async transactionalEntityManager => {
+        comment = await Comment.create(comment);
+        
+        await transactionalEntityManager.save(Comment, comment);
 
-        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.COMMENTED_POST, profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST }).save();
+        let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.COMMENTED_POST, profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST })
+        
+        await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
 
         await NotificationService.notifyNewComent(comment);
       });

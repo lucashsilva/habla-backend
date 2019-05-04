@@ -14,6 +14,7 @@ import { InternalServerError } from "../errors/internal-server-error";
 import { InsufficentScoreError } from "../errors/insufficent_score_error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { PostMapChannel } from "../models/post-map-channel";
+import { getConnection } from "typeorm";
 
 export const PostTypeDef = `
   extend type Query {
@@ -52,17 +53,17 @@ export const PostResolvers = {
       requireLocationInfo(context);
 
       const query = Post.createQueryBuilder("post")
-                        .limit(args.limit || 20)
-                        .orderBy("post.createdAt", "DESC");
+        .limit(args.limit || 20)
+        .orderBy("post.createdAt", "DESC");
 
       args.ignoreIds && args.ignoreIds.length && query.where({ id: Not(In(args.ignoreIds)) }); // andWhere is not working with object literals so let's use where
 
       query.andWhere(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`);
 
       args.channelId && query.andWhere(qb => `EXISTS${qb.subQuery()
-                                                        .from(PostMapChannel, "pmc")
-                                                        .where(`post.id = pmc.postId AND pmc."channelId" = ${args.channelId}`)
-                                                        .getQuery()}`);
+        .from(PostMapChannel, "pmc")
+        .where(`post.id = pmc.postId AND pmc."channelId" = ${args.channelId}`)
+        .getQuery()}`);
 
       return query.getMany();
     },
@@ -80,11 +81,11 @@ export const PostResolvers = {
     comments: async (post: Post) => {
       return await Comment.find({ where: { post: post }, order: { createdAt: 'DESC' } });
     },
-    channels: async(post: Post) => {
+    channels: async (post: Post) => {
       return await Post.createQueryBuilder()
-                       .relation(Post, "channels")
-                       .of(post)
-                       .loadMany();
+        .relation(Post, "channels")
+        .of(post)
+        .loadMany();
     },
     distance: (post, args, context) => {
       requireLocationInfo(context);
@@ -106,7 +107,7 @@ export const PostResolvers = {
       requireLocationInfo(context);
 
       let post: Post = await Post.create(args.post);
-      
+
       if (!args.anonymous) {
         post.ownerUid = context.user.uid;
       } else {
@@ -121,65 +122,73 @@ export const PostResolvers = {
         }
       }
 
-      const location = context.location? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] }: null;
+      const location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
       post.location = location;
 
-      post = await Post.create(post).save();
+      await getConnection().transaction(async transactionalEntityManager => {
+        post = await Post.create(post);
 
-      let photoURL;
-      
-      if (args.photo) {
+        await transactionalEntityManager.save(Post, post);
 
-        let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}`+`${post.id}`+`-original`);
+        let photoURL;
 
-        try {
-          let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
+        if (args.photo) {
 
-          await file.save(photoData.buffer, {
-            metadata: { contentType: photoData.mimeType },
-            validation: 'md5'
-          });
+          let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}` + `${post.id}` + `-original`);
 
-          photoURL = (await file.getSignedUrl({
-            action: 'read',
-            expires: '03-09-2491'
-          }))[0];
-        } catch (error) {
-          console.log(JSON.stringify(error));
-          throw new InternalServerError('Post picture could not be saved.');
-        }
-      }
+          try {
+            let file = admin.storage().bucket().file(`posts-photos/${photoData.fileName}`);
 
-      post.photoURL = photoURL;
+            await file.save(photoData.buffer, {
+              metadata: { contentType: photoData.mimeType },
+              validation: 'md5'
+            });
 
-      post.channels = [];
-
-      let hashtags = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g);
-      
-      if (hashtags && hashtags.length) await Promise.all(hashtags.map(async h => {
-        const name = h.substr(1);
-        let channel = await Channel.findOne({ name });
-
-        if (!channel) {
-          channel = await Channel.create({ name }).save();
+            photoURL = (await file.getSignedUrl({
+              action: 'read',
+              expires: '03-09-2491'
+            }))[0];
+          } catch (error) {
+            console.log(JSON.stringify(error));
+            throw new InternalServerError('Post picture could not be saved.');
+          }
         }
 
-        post.channels.push(channel);
-      }));
+        post.photoURL = photoURL;
 
-      post = await post.save();
+        post.channels = [];
 
-      if (!args.anonymous) {
-        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST }).save();
-      } else {
-        await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST }).save();
-      }
+        let hashtags = post.body.match(/(?<=^|(?<=[^a-zA-Z0-9-_\\.]))#([A-Za-z]+[A-Za-z0-9_]+)/g);
 
+        if (hashtags && hashtags.length) await Promise.all(hashtags.map(async h => {
+          const name = h.substr(1);
+          let channel = await Channel.findOne({ name });
+
+          if (!channel) {
+            channel = await Channel.create({ name });
+            await transactionalEntityManager.save(Channel, channel);
+          }
+
+          post.channels.push(channel);
+        }));
+
+        post = await transactionalEntityManager.save(Post, post);
+
+        let profileScoreRecord = null;
+
+        if (!args.anonymous) {
+          profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST });
+        } else {
+          profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST });
+        }
+
+        await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
+
+      });
       return post;
     },
     deletePost: async (parent, args, context) => {
       let post = await Post.findOne(args.postId);
-
       if (!post) {
         throw new NotFoundError();
       } else if (post.ownerUid !== context.user.uid) {
@@ -187,7 +196,6 @@ export const PostResolvers = {
       } else {
         post.deletedAt = new Date(Date.now());
         await post.save();
-
         return true;
       }
     }
