@@ -12,6 +12,9 @@ export class Post extends BaseEntity {
     @Column({ nullable: false })
     body: string;
 
+    @Column({ nullable: true })
+    anonymous: Boolean;
+
     @Column("geometry", {
         spatialFeatureType: "Point",
         srid: 4326,
