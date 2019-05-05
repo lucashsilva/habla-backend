@@ -36,6 +36,7 @@ export const PostTypeDef = `
     body: String!
     distance: String!
     createdAt: Date!
+    anonymous: Boolean!
     owner: Profile
     channels: [Channel!]!
     comments: [Comment!]!
@@ -75,7 +76,7 @@ export const PostResolvers = {
       return post.ownerUid ? await Profile.findOne(post.ownerUid) : null;
     },
     anonymous: (post: Post) => {
-      return !post.ownerUid;
+      return post.anonymous ? Profile.findOne(post.ownerUid) : false;
     },
     comments: async (post: Post) => {
       return await Comment.find({ where: { post: post }, order: { createdAt: 'DESC' } });
