@@ -39,7 +39,7 @@ export const ProfileTypeDef = `
     gender: Gender
     posts: [Post!]!
     photoURL: String
-    home: [Int]
+    home: [Float]
     score: Int!
     scoreBalance: Int!
   }
