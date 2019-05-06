@@ -12,7 +12,7 @@ export class Post extends BaseEntity {
     @Column({ nullable: false })
     body: string;
 
-    @Column({ nullable: true })
+    @Column({ default: true })
     anonymous: Boolean;
 
     @Column("geometry", {
