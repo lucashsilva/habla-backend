@@ -24,10 +24,11 @@ export const PostTypeDef = `
 
   input PostInput {
     body: String!
+    anonymous: Boolean!
   }
 
   extend type Mutation {
-    createPost(channelId: ID, post: PostInput!, anonymous: Boolean, photo: Upload): Post!
+    createPost(channelId: ID, post: PostInput!, photo: Upload): Post!
     deletePost(postId: ID!): Boolean!
   }
 
@@ -73,10 +74,7 @@ export const PostResolvers = {
   },
   Post: {
     owner: async (post: Post) => {
-      return post.ownerUid ? await Profile.findOne(post.ownerUid) : null;
-    },
-    anonymous: (post: Post) => {
-      return !post.ownerUid;
+      return !post.anonymous ? Profile.findOne(post.ownerUid) : null;
     },
     comments: async (post: Post) => {
       return await Comment.find({ where: { post: post }, order: { createdAt: 'DESC' } });
