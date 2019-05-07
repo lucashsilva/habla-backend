@@ -57,7 +57,7 @@ export const CommentResolvers = {
         
         await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
 
-        await NotificationService.notifyNewComent(comment);
+        await NotificationService.notifyNewComent(comment, transactionalEntityManager);
       });
 
       return comment;

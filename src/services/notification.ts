@@ -3,18 +3,19 @@ import { CommentNotificationType, Notification } from "../models/notification";
 import { Post } from "../models/post";
 import Expo, { ExpoPushMessage } from 'expo-server-sdk';
 import { Profile } from "../models/profile";
+import { EntityManager } from "typeorm";
 
 const expo = new Expo();
 
 export class NotificationService {
-	static notifyNewComent = async(comment: Comment) => {
+	static notifyNewComent = async(comment: Comment, entityManager: EntityManager) => {
 		const post = await Post.findOne(comment.postId);
 
 		if (post.ownerUid !== comment.ownerUid) {
 			const receiver = await Profile.findOne(post.ownerUid);
 			const sender = await Profile.findOne(comment.ownerUid);
 
-			await Notification.create({ comment: comment, type: CommentNotificationType.COMMENT_ON_OWNED_POST, receiverUid: post.ownerUid }).save();
+			await entityManager.insert(Notification, Notification.create({ comment: comment, type: CommentNotificationType.COMMENT_ON_OWNED_POST, receiverUid: post.ownerUid }));
 			
 			if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
 				body: `${sender.username} commented your post.`,
