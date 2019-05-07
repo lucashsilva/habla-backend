@@ -106,7 +106,7 @@ export const PostResolvers = {
 
       let post: Post = await Post.create(args.post);
 
-      if (!args.anonymous) {
+      if (!post.anonymous) {
         post.ownerUid = context.user.uid;
       } else {
         const result = await ProfileScoreRecord.createQueryBuilder("record")
