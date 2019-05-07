@@ -106,9 +106,9 @@ export const PostResolvers = {
 
       let post: Post = await Post.create(args.post);
 
-      if (!post.anonymous) {
-        post.ownerUid = context.user.uid;
-      } else {
+      post.ownerUid = context.user.uid;
+
+      if (post.anonymous) {
         const result = await ProfileScoreRecord.createQueryBuilder("record")
           .select("SUM(value)", "scoreBalance")
           .where({ profileUid: Equal(context.user.uid) })
