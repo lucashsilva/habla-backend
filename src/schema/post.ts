@@ -174,7 +174,7 @@ export const PostResolvers = {
 
         let profileScoreRecord = null;
 
-        if (!args.anonymous) {
+        if (!post.anonymous) {
           profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST });
         } else {
           profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST });
