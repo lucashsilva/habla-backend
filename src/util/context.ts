@@ -1,6 +1,5 @@
 import { InvalidLocationError } from "../errors/invalid-location-error";
 import { MissingLocationError } from "../errors/missing-location-error";
-import { AuthenticationError } from "../errors/authentication-error";
 
 export const requireLocationInfo = (context) => {
     if (!(context.location && context.location.latitude && context.location.longitude)) throw new MissingLocationError();
