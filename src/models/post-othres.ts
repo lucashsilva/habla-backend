@@ -1,8 +1,8 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, BaseEntity, Column, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class PostOthres extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryColumn()
     postId: number;
 
     @Column({ default: false })
