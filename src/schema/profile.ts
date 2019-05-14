@@ -3,7 +3,6 @@ import { Post } from "../models/post";
 import { IsNull, Equal, Brackets, MoreThan } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
 import { NotFoundError } from "../errors/not-found-error";
-import { LocationError } from "../errors/location-error";
 import * as admin from 'firebase-admin';
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 import { requireLocationInfo } from "../util/context";
@@ -92,13 +91,9 @@ export const ProfileResolvers = {
       let photoURL;
       let location;
       if (args.updateHome) {
-        try {
           requireLocationInfo(context);
           location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
-        } catch (error) {
-          console.log(JSON.stringify(error));
-          throw new LocationError('Home could not be saved.');
-        }
+
       }
 
       await getConnection().transaction(async transactionalEntityManager => {
