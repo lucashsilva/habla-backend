@@ -1,7 +1,8 @@
-import { Column, Entity, BaseEntity, Index, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, BaseEntity, Index, OneToMany, PrimaryColumn, ManyToMany, JoinTable } from "typeorm";
 import { Post } from "./post";
 import { ProfileVotePost } from "./profile-vote-post";
 import { Notification } from "./notification";
+import { ProfileFollowPost } from "./profile-follow-post";
 
 @Entity()
 export class Profile extends BaseEntity {
@@ -50,4 +51,8 @@ export class Profile extends BaseEntity {
 
     @OneToMany(type => Notification, notification => notification.receiver, { onDelete: 'CASCADE' })
     notifications: Notification[];
+
+    @ManyToMany(type => ProfileFollowPost, { cascade: ['insert'] })
+    @JoinTable({ name: 'profile_follow_post' })
+    profileFollowPost: ProfileFollowPost[];
 }
