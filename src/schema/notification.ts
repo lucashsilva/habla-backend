@@ -1,5 +1,4 @@
-import { Notification } from "../models/notification";
-import { Post } from "../models/post";
+import { Notification, CommentNotificationType, VoteNotificationType } from "../models/notification";
 import { Comment } from "../models/comment";
 
 export const NotificationTypeDef = `
@@ -15,25 +14,24 @@ export const NotificationTypeDef = `
     id: ID!
     type: NotificationType!
     read: Boolean!
+    post: Post
     comment: Comment
-    createdAt: Date!
+    updatedAt: Date!
   }
 
   enum NotificationType {
-    COMMENT_ON_OWNED_POST
+    ${CommentNotificationType.COMMENT_ON_OWNED_POST}
+    ${VoteNotificationType.VOTE_ON_OWNED_POST}
   }
 `;
 
 export const NotificationResolvers = {
   Query: {
     notifications: async(parent, args, context) => {
-      return await Notification.find({ where: { receiverUid: context.user.uid }, order: { createdAt: 'DESC' }});
+      return await Notification.find({ where: { receiver: { uid: context.user.uid }}, order: { updatedAt: 'DESC' }, relations: ['post', 'comment']});
     }
   },
   Notification: {
-    comment: async(notification: Notification) => {
-      return await Comment.findOne(notification.commentId);
-    },
     read: (notification: Notification) => {
       return !!notification.readAt;
     }
