@@ -1,6 +1,7 @@
 import { Entity, BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, Column, ManyToOne, UpdateDateColumn } from "typeorm";
 import { Profile } from "./profile";
 import { Comment } from "./comment";
+import { Post } from "./post";
 
 @Entity()
 export class Notification extends BaseEntity {
@@ -8,16 +9,19 @@ export class Notification extends BaseEntity {
     id: number;
     
     @Column({ nullable: false })
-    type: CommentNotificationType; // add other types later
+    type: CommentNotificationType | VoteNotificationType; // add other types later
 
-    @Column()
+    @Column({ nullable: true })
     commentId: number;
 
     @ManyToOne(type => Comment, comment => comment.notifications, { onDelete: 'CASCADE' })
     comment: Comment;
 
-    @Column({ nullable: false })
-    receiverUid: string;
+    @Column({ nullable: true })
+    postId: number;
+
+    @ManyToOne(type => Post, post => post.notifications, { onDelete: 'CASCADE' })
+    post: Post;
 
     @ManyToOne(type => Profile, profile => profile.notifications, { onDelete: 'CASCADE' })
     receiver: Profile;
@@ -34,4 +38,8 @@ export class Notification extends BaseEntity {
 
 export enum CommentNotificationType {
     COMMENT_ON_OWNED_POST = 'COMMENT_ON_OWNED_POST'
+}
+
+export enum VoteNotificationType {
+    VOTE_ON_OWNED_POST = 'VOTE_ON_OWNED_POST'
 }

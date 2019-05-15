@@ -5,6 +5,8 @@ import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-sc
 import { Equal } from "typeorm";
 import { getConnection } from "typeorm";
 import { NotFoundError } from "../errors/not-found-error";
+import { NotificationService } from "../services/notification";
+
 
 export const ProfileVotePostTypeDef = `
   extend type Mutation {
@@ -47,9 +49,12 @@ export const ProfileVotePostResolvers = {
       await getConnection().transaction(async transactionalEntityManager => {
         await transactionalEntityManager.save(pvp);
 
+        await NotificationService.notifyVoteActivity(pvp, transactionalEntityManager);
+
         const scoreRecord = await ProfileScoreRecord.createQueryBuilder("record")
           .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
           .getCount();
+
 
         if (!scoreRecord) {
           let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.VOTED_POST, profileUid: context.user.uid, postId, value: ProfileScoreRecord.POINTS.VOTED_POST });

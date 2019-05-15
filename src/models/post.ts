@@ -3,6 +3,7 @@ import { Channel } from "./channel";
 import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ProfileVotePost } from "./profile-vote-post";
+import { Notification } from "./notification";
 
 @Entity()
 export class Post extends BaseEntity {
@@ -36,7 +37,10 @@ export class Post extends BaseEntity {
     @OneToMany(type => ProfileVotePost, pvp => pvp.post)
     profileVotePosts: ProfileVotePost[];
 
-    @Column({ nullable: true })
+    @OneToMany(type => Notification, notification => notification.post)
+    notifications: Notification[];
+
+    @Column({ nullable: false })
     ownerUid: string;
 
     @CreateDateColumn({ type: "timestamp with time zone"})

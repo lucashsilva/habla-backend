@@ -1,30 +1,50 @@
 import { Comment } from "../models/comment";
-import { CommentNotificationType, Notification } from "../models/notification";
+import { CommentNotificationType, Notification, VoteNotificationType } from "../models/notification";
 import { Post } from "../models/post";
-import Expo, { ExpoPushMessage } from 'expo-server-sdk';
+import Expo from 'expo-server-sdk';
 import { Profile } from "../models/profile";
 import { EntityManager } from "typeorm";
+import { ProfileVotePost } from "../models/profile-vote-post";
 
 const expo = new Expo();
 
 export class NotificationService {
 	static notifyNewComent = async(comment: Comment, entityManager: EntityManager) => {
-		const post = await Post.findOne(comment.postId);
+		const post = await entityManager.findOne(Post, comment.postId);
 
-		if (post.ownerUid !== comment.ownerUid) {
-			const receiver = await Profile.findOne(post.ownerUid);
-			const sender = await Profile.findOne(comment.ownerUid);
+		const receiver = await entityManager.findOne(Profile, post.ownerUid);
+		const sender = await entityManager.findOne(Profile, comment.ownerUid);
 
-			await entityManager.insert(Notification, Notification.create({ comment: comment, type: CommentNotificationType.COMMENT_ON_OWNED_POST, receiverUid: post.ownerUid }));
-			
-			if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
-				body: `${sender.username} commented your post.`,
-				data: {
-					type: CommentNotificationType.COMMENT_ON_OWNED_POST,
-					postId: post.id
-				}
-			}, [receiver.expoPushToken]);
+		await entityManager.insert(Notification, Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_OWNED_POST }));
+		
+		if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
+			body: `${sender.username} commented your post.`,
+			data: {
+				type: CommentNotificationType.COMMENT_ON_OWNED_POST,
+				postId: post.id
+			}
+		}, [receiver.expoPushToken]);
+	}
+
+	static notifyVoteActivity = async(vote: ProfileVotePost, entityManager: EntityManager) => {
+		const post = await entityManager.findOne(Post, vote.postId);
+		const receiver = await entityManager.findOne(Profile, post.ownerUid);
+		const voteCount = await entityManager.count(ProfileVotePost, { where: { post: post }});
+		const notification = await entityManager.findOne(Notification, { where: { type: VoteNotificationType.VOTE_ON_OWNED_POST, post: post }});
+
+		if (notification) {
+			await entityManager.update(Notification, { id: notification.id }, { readAt: null });
+		} else {
+			await entityManager.insert(Notification, Notification.create({ post, receiver, type: VoteNotificationType.VOTE_ON_OWNED_POST }));
 		}
+	
+		if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
+			body: `${voteCount} people voted on your post.`,
+			data: {
+				type: VoteNotificationType,
+				postId: post.id
+			}
+		}, [receiver.expoPushToken]);
 	}
 
 	private static sendExpoNotifications = async(message: NotificationMessage, tokens: string[]) => {
