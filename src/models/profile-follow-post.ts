@@ -6,6 +6,6 @@ export class ProfileFollowPost extends BaseEntity {
     postId: number;
 
     @PrimaryColumn()
-    profileUiId: number;
+    profileUid: number;
 
 }
