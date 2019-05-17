@@ -27,7 +27,7 @@ export const ProfileFollowPostResolvers = {
       if (profileFollowPost) {
         return true;
       } else {
-        throw false;
+        return false;
       }
     }
   },
@@ -35,17 +35,16 @@ export const ProfileFollowPostResolvers = {
     follow: async(parent, args, context) => {
       const { postId } = args;
 
-      let post = await Post.findOne({id: postId})
+      let post = await Post.findOne({id: postId});
 
-      if(post.ownerUid !== context.user.uid){
+      if (post.ownerUid !== context.user.uid) {
         const profileUid = context.user.uid;
         
         const pfp = await ProfileFollowPost.create({postId, profileUid});
         await ProfileFollowPost.save(pfp);
         
         return pfp;
-
-      }else{
+      } else{
         throw new InvalidOperationError();
       }
     },
@@ -56,7 +55,7 @@ export const ProfileFollowPostResolvers = {
       const profileUid = context.user.uid;
       let pfp = await ProfileFollowPost.findOne({postId, profileUid});
 
-      if(pfp){
+      if (pfp) {
         await ProfileFollowPost.delete({postId, profileUid});
         return true;
       }
