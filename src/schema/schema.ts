@@ -5,11 +5,7 @@ import { CommentTypeDef, CommentResolvers } from "./comment";
 import { ChannelTypeDef, ChannelResolvers } from "./channel";
 import { ProfileVotePostTypeDef, ProfileVotePostResolvers } from "./profile-vote-post";
 import { NotificationTypeDef, NotificationResolvers } from "./notification";
-<<<<<<< HEAD
-import { ProfileFollowPostTypeDef, ProfileFollowPostResolvers} from "./profile-follow-post"
-=======
 import { ProfileFollowPostTypeDef, ProfileFollowPostResolvers } from "./profile-follow-post"
->>>>>>> 1115265f9186335b77612686fef33e45ba0e90c2
 
 const Query = `
     scalar Date
