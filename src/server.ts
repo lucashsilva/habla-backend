@@ -18,6 +18,7 @@ import { requireAuthentication } from './services/firebase';
 import { Notification } from './models/notification';
 import { ProfileScoreRecord } from './models/profile-score-record';
 import { PostMapChannel } from './models/post-map-channel';
+import { ProfileFollowPost } from './models/profile-follow-post';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -83,7 +84,8 @@ createConnection({
         ProfileVotePost,
         Notification,
         ProfileScoreRecord,
-        PostMapChannel
+        PostMapChannel,
+        ProfileFollowPost
     ]
 }).then(() => {
     httpServer.listen(PORT);

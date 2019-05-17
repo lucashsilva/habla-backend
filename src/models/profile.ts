@@ -51,8 +51,4 @@ export class Profile extends BaseEntity {
 
     @OneToMany(type => Notification, notification => notification.receiver, { onDelete: 'CASCADE' })
     notifications: Notification[];
-
-    @ManyToMany(type => ProfileFollowPost, { cascade: ['insert'] })
-    @JoinTable({ name: 'profile_follow_post' })
-    profileFollowPost: ProfileFollowPost[];
 }
