@@ -57,7 +57,7 @@ export class Post extends BaseEntity {
     @Column({ nullable: true })
     photoURL: string;
 
-    @ManyToMany(type => ProfileFollowPost, { cascade: ['insert'] })
-    @JoinTable( {name: 'profile_follow_post' } )
-    profileFollowPosts: ProfileFollowPost[];
+    @ManyToMany(type => Profile, { cascade: ['insert'] })
+    @JoinTable({ name: 'profile_follow_post' })
+    postFollowers: Profile[];
 }
