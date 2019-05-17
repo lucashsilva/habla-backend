@@ -1,11 +1,11 @@
 import { ProfileFollowPost } from "../models/profile-follow-post";
 import { getConnection } from "typeorm";
-import { AuthorizationError } from "../errors/authorization-error";
 import { Post } from "../models/post";
+import { InvalidOperationError } from "../errors/invalid-operator-error";
 
 export const ProfileFollowPostTypeDef = `
   extend type Query {
-    followOrUnfollow(postId: ID!): Boolean
+    profileFollowsPost(postId: ID!): Boolean
   }
 
   extend type Mutation {
@@ -21,7 +21,7 @@ export const ProfileFollowPostTypeDef = `
 
 export const ProfileFollowPostResolvers = {
   Query: {
-    followOrUnfollow: async (parent, args, context) => {
+    profileFollowsPost: async (parent, args, context) => {
       let profileFollowPost = await ProfileFollowPost.findOne(args.postId, context.user.id);
 
       if (profileFollowPost) {
@@ -35,20 +35,18 @@ export const ProfileFollowPostResolvers = {
     follow: async(parent, args, context) => {
       const { postId } = args;
 
-      let post = await Post.findOne({ id: postId })
+      let post = await Post.findOne({id: postId})
 
       if(post.ownerUid !== context.user.uid){
         const profileUid = context.user.uid;
-        const pfp = ProfileFollowPost.create({ postId, profileUid });
-  
-        await getConnection().transaction(async transactionalEntityManager => {
-          await transactionalEntityManager.save(pfp);
-        });
-  
+        
+        const pfp = await ProfileFollowPost.create({postId, profileUid});
+        await ProfileFollowPost.save(pfp);
+        
         return pfp;
 
       }else{
-        throw new AuthorizationError();
+        throw new InvalidOperationError();
       }
     },
 
@@ -56,10 +54,10 @@ export const ProfileFollowPostResolvers = {
       const { postId  } = args;
 
       const profileUid = context.user.uid;
-      let pfp = ProfileFollowPost.findOne({ postId, profileUid });
+      let pfp = await ProfileFollowPost.findOne({postId, profileUid});
 
       if(pfp){
-        ProfileFollowPost.delete({postId, profileUid});
+        await ProfileFollowPost.delete({postId, profileUid});
         return true;
       }
 

@@ -1,6 +1,4 @@
-import { Entity, BaseEntity, PrimaryColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from "typeorm";
-import { Post } from "./post";
-import { Profile } from "./profile";
+import { Entity, BaseEntity, PrimaryColumn } from "typeorm";
 
 @Entity()
 export class ProfileFollowPost extends BaseEntity {
@@ -9,4 +7,6 @@ export class ProfileFollowPost extends BaseEntity {
 
     @PrimaryColumn()
     profileUid: string;
+
+    
 }
