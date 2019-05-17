@@ -105,7 +105,7 @@ export const PostResolvers = {
     profilePostVote: async (post: Post, args, context) => {
       return await ProfileVotePost.findOne({ postId: post.id, profileUid: context.user.uid });
     },
-    profileFollowPosts:async (post: Post, args, context) => {
+    profileFollowPost:async (post: Post, args, context) => {
       return await ProfileFollowPost.findOne({ postId: post.id, profileUid: context.user.uid });
     }
   },
