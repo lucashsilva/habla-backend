@@ -7,6 +7,8 @@ import { Post } from "../models/post";
 import { NotificationService } from "../services/notification";
 import { NotFoundError } from "../errors/not-found-error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
+import { ProfileFollowPost } from "../models/profile-follow-post";
+import { ProfileFollowPostResolvers } from "./profile-follow-post";
 
 export const CommentTypeDef = `
   type Comment {
@@ -41,6 +43,8 @@ export const CommentResolvers = {
 
       comment.postId = args.postId;
 
+      let post = await Post.findOne({ id: args.postId });
+
       if (!args.anonymous) {
         comment.ownerUid = context.user.uid;
       }
@@ -52,6 +56,15 @@ export const CommentResolvers = {
         comment = await Comment.create(comment);
         
         await transactionalEntityManager.save(Comment, comment);
+
+        if(post.ownerUid !== context.user.uid){
+          let profileFollowPost = await ProfileFollowPost.findOne({postId: comment.postId, profileUid: comment.ownerUid})
+          
+          if(!profileFollowPost){
+            let profileFollowPost = await ProfileFollowPost.create({postId: comment.postId, profileUid: comment.ownerUid})
+            await transactionalEntityManager.save(ProfileFollowPost, profileFollowPost);
+          }
+        }
 
         let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.COMMENTED_POST, profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST })
         

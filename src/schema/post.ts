@@ -15,6 +15,7 @@ import { InsufficentScoreError } from "../errors/insufficent_score_error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { PostMapChannel } from "../models/post-map-channel";
 import { getConnection } from "typeorm";
+import { ProfileFollowPost } from "../models/profile-follow-post";
 
 export const PostTypeDef = `
   extend type Query {
@@ -46,6 +47,7 @@ export const PostTypeDef = `
     voteCount: Int!
     profilePostVote: PostVote
     photoURL: String
+    profileFollowPost: ProfileFollowPost
   }
 `;
 
@@ -102,6 +104,9 @@ export const PostResolvers = {
     },
     profilePostVote: async (post: Post, args, context) => {
       return await ProfileVotePost.findOne({ postId: post.id, profileUid: context.user.uid });
+    },
+    profileFollowPost:async (post: Post, args, context) => {
+      return await ProfileFollowPost.findOne({ postId: post.id, profileUid: context.user.uid });
     }
   },
   Mutation: {
