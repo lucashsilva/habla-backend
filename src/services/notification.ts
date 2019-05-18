@@ -5,6 +5,7 @@ import Expo from 'expo-server-sdk';
 import { Profile } from "../models/profile";
 import { EntityManager } from "typeorm";
 import { ProfileVotePost } from "../models/profile-vote-post";
+import { ProfileFollowPost } from "../models/profile-follow-post";
 
 const expo = new Expo();
 
@@ -47,11 +48,12 @@ export class NotificationService {
 		}, [receiver.expoPushToken]);
 	}
 
-	static notifyNewCommentFollowers = async(comment: Comment, entityManager: EntityManager) =>{
+	static notifyNewCommentFollowers = async (comment: Comment, entityManager: EntityManager) => {
 		const post = await entityManager.findOne(Post, comment.postId);
-
-		for(let postFollowers of post.postFollowers){
-			const receiver = await entityManager.findOne(Profile, postFollowers);
+		
+		//aqui
+		await Promise.all(post.postFollowers.map(async profile => {
+			const receiver = await entityManager.findOne(Profile, profile);
 			const sender = await entityManager.findOne(Profile, comment.ownerUid);
 
 			const postOwner = await entityManager.findOne(Profile, post.ownerUid);
@@ -65,7 +67,8 @@ export class NotificationService {
 					postId: post.id
 				}
 			}, [receiver.expoPushToken]);
-		}
+		}));
+	
 	}
 
 	private static sendExpoNotifications = async(message: NotificationMessage, tokens: string[]) => {
