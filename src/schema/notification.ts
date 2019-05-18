@@ -22,6 +22,7 @@ export const NotificationTypeDef = `
   enum NotificationType {
     ${CommentNotificationType.COMMENT_ON_OWNED_POST}
     ${VoteNotificationType.VOTE_ON_OWNED_POST}
+    ${CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST}
   }
 `;
 

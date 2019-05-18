@@ -47,6 +47,27 @@ export class NotificationService {
 		}, [receiver.expoPushToken]);
 	}
 
+	static notifyNewCommentFollowers = async(comment: Comment, entityManager: EntityManager) =>{
+		const post = await entityManager.findOne(Post, comment.postId);
+
+		for(let postFollowers of post.postFollowers){
+			const receiver = await entityManager.findOne(Profile, postFollowers);
+			const sender = await entityManager.findOne(Profile, comment.ownerUid);
+
+			const postOwner = await entityManager.findOne(Profile, post.ownerUid);
+
+			await entityManager.insert(Notification, Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST }));
+
+			if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
+				body: `${sender.username} commented on ${postOwner.username}'s post`,
+				data: {
+					type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST,
+					postId: post.id
+				}
+			}, [receiver.expoPushToken]);
+		}
+	}
+
 	private static sendExpoNotifications = async(message: NotificationMessage, tokens: string[]) => {
 		let messages = [];
 
