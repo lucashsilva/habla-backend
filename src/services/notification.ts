@@ -3,7 +3,7 @@ import { CommentNotificationType, Notification, VoteNotificationType } from "../
 import { Post } from "../models/post";
 import Expo from 'expo-server-sdk';
 import { Profile } from "../models/profile";
-import { EntityManager } from "typeorm";
+import { EntityManager, Equal } from "typeorm";
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { ProfileFollowPost } from "../models/profile-follow-post";
 
@@ -57,13 +57,14 @@ export class NotificationService {
 					.where(`EXISTS${queryBuilder.subQuery()
 												.select()
 												.from(ProfileFollowPost, "pfp")
-												.where({ postId: post.id })
+												.where({ postId: Equal(post.id) })
+												.andWhere(`pfp."profileUid" = p.id`)
 												.getQuery()}`);
 		
+		console.log(queryBuilder.getSql());
 		const receiverProfiles = await queryBuilder.getMany();
 		const receiverPushTokens = receiverProfiles.filter(p => !!p.expoPushToken).map(p => p.expoPushToken);
 		const notifications = receiverProfiles.map(receiver => Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST }));
-
 
 		await entityManager.insert(Notification, notifications);
 		
