@@ -72,7 +72,7 @@ export const CommentResolvers = {
 
         await NotificationService.notifyNewComent(comment, transactionalEntityManager);
 
-        await NotificationService.notifyNewCommentFollowers(comment,transactionalEntityManager);
+        await NotificationService.notifyThirdPartyComment(comment,transactionalEntityManager);
       });
 
       return comment;

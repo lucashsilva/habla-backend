@@ -48,26 +48,39 @@ export class NotificationService {
 		}, [receiver.expoPushToken]);
 	}
 
-	static notifyNewCommentFollowers = async (comment: Comment, entityManager: EntityManager) => {
-		const post = await entityManager.findOne(Post, comment.postId);
+	static notifyThirdPartyComment = async (comment: Comment, entityManager: EntityManager) => {
+		const post = await entityManager.findOne(Post, comment.postId, { relations: ['owner'] });
+		const sender = await entityManager.findOne(Profile, comment.ownerUid);
+		const queryBuilder = await entityManager.createQueryBuilder(Profile, "p");
+
+		queryBuilder.select()
+					.where(`EXISTS${queryBuilder.subQuery()
+												.select()
+												.from(ProfileFollowPost, "pfp")
+												.where({ postId: post.id })
+												.getQuery()}`);
 		
-		//aqui
-		await Promise.all(post.postFollowers.map(async profile => {
-			const receiver = await entityManager.findOne(Profile, profile);
-			const sender = await entityManager.findOne(Profile, comment.ownerUid);
+		const receiverProfiles = await queryBuilder.getMany();
+		const receiverPushTokens = receiverProfiles.filter(p => !!p.expoPushToken).map(p => p.expoPushToken);
+		const notifications = receiverProfiles.map(receiver => Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST }));
 
-			const postOwner = await entityManager.findOne(Profile, post.ownerUid);
 
-			await entityManager.insert(Notification, Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST }));
+		await entityManager.insert(Notification, notifications);
+		
+		let body = "";
+		if(post.anonymous){
+			body = `${sender.username} commented in a post that you follow`
+		}else{
+			body = `${sender.username} commented on ${post.owner.username}'s post`
+		}
 
-			if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
-				body: `${sender.username} commented on ${postOwner.username}'s post`,
+		if (receiverPushTokens.length > 0) await NotificationService.sendExpoNotifications({
+			body: body,
 				data: {
 					type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST,
 					postId: post.id
 				}
-			}, [receiver.expoPushToken]);
-		}));
+			}, receiverPushTokens);
 	
 	}
 
