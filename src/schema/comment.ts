@@ -70,7 +70,7 @@ export const CommentResolvers = {
         
         await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
 
-        await NotificationService.notifyNewComent(comment, transactionalEntityManager);
+        await NotificationService.notifyNewComment(comment, transactionalEntityManager);
       });
 
       return comment;

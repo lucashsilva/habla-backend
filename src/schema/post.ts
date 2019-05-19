@@ -65,6 +65,7 @@ export const PostResolvers = {
       query.andWhere(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`);
 
       args.channelId && query.andWhere(qb => `EXISTS${qb.subQuery()
+        .select()
         .from(PostMapChannel, "pmc")
         .where(`post.id = pmc.postId AND pmc."channelId" = ${args.channelId}`)
         .getQuery()}`);
