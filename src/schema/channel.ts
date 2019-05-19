@@ -29,6 +29,7 @@ export const ChannelResolvers = {
                                          .from(Post, "post")
                                          .select("COUNT(*)")
                                          .where(qb => `EXISTS${qb.subQuery()
+                                                                 .select()
                                                                  .from(PostMapChannel, "pmc")
                                                                  .where(`post.id = pmc.postId AND pmc."channelId" = channel.id`)
                                                                  .getQuery()}`)

@@ -10,7 +10,7 @@ import { ProfileFollowPost } from "../models/profile-follow-post";
 const expo = new Expo();
 
 export class NotificationService {
-	static notifyNewComent = async(comment: Comment, entityManager: EntityManager) => {
+	static notifyNewComment = async(comment: Comment, entityManager: EntityManager) => {
 		const post = await entityManager.findOne(Post, comment.postId);
 
 		const receiver = await entityManager.findOne(Profile, post.ownerUid);
