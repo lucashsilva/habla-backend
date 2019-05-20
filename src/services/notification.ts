@@ -58,9 +58,9 @@ export class NotificationService {
 					.where(`EXISTS${queryBuilder.subQuery()
 												.select()
 												.from(ProfileFollowPost, "pfp")
-												.where(`pfp."postId" = ${post.id}`)
+												.where(`pfp."postId" = '${post.id}'`)
 												.andWhere(`pfp."profileUid" = p.uid`)
-												.andWhere(`pfp."profileUid" != ${comment.ownerUid}`)
+												.andWhere(`pfp."profileUid" != '${comment.ownerUid}'`)
 												.getQuery()}`);
 		
 		const receiverProfiles = await queryBuilder.getMany();
