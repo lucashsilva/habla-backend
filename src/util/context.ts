@@ -1,15 +1,17 @@
-import { LocationError } from "../errors/location-error";
-import { AuthenticationError } from "../errors/authentication-error";
+import { InvalidLocationError } from "../errors/invalid-location-error";
+import { MissingLocationError } from "../errors/missing-location-error";
 
 export const requireLocationInfo = (context) => {
-    if (!(context.location && context.location.latitude && context.location.longitude)) throw new LocationError();
+    if (!(context.location && context.location.latitude && context.location.longitude)) throw new MissingLocationError();
 
     try {
         const { latitude, longitude } = context.location;
 
-        parseInt(latitude);
-        parseInt(longitude);
+        if ((parseFloat(latitude) > 90 || parseFloat(latitude) < -90) ||
+            parseFloat(longitude) > 180 || parseFloat(longitude) < -180) {
+            throw new InvalidLocationError("Invalid location.");
+        }
     } catch (error) {
-        throw new LocationError("Invalid location.");
+        throw new InvalidLocationError("Invalid location.");
     }
 }

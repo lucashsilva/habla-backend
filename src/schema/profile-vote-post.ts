@@ -4,7 +4,9 @@ import { Profile } from "../models/profile";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { Equal } from "typeorm";
 import { getConnection } from "typeorm";
+import { NotFoundError } from "../errors/not-found-error";
 import { NotificationService } from "../services/notification";
+
 
 export const ProfileVotePostTypeDef = `
   extend type Mutation {
@@ -25,16 +27,20 @@ export const ProfileVotePostTypeDef = `
 
 export const ProfileVotePostResolvers = {
   PostVote: {
-    post: async(profileVotePost: ProfileVotePost) => {
+    post: async (profileVotePost: ProfileVotePost) => {
       return await Post.findOne(profileVotePost.postId);
     },
-    profile: async(profileVotePost: ProfileVotePost) => {
+    profile: async (profileVotePost: ProfileVotePost) => {
       return await Profile.findOne(profileVotePost.profileUid);
     }
   },
   Mutation: {
-    vote: async(parent, args, context) => {
+    vote: async (parent, args, context) => {
       const { postId, type } = args;
+
+      if (!await Post.count({ id: args.postId })) {
+        throw new NotFoundError("Invalid post id.");
+      }
 
       const profileUid = context.user.uid;
       const pvp = await ProfileVotePost.findOne({ postId, profileUid }) || ProfileVotePost.create({ postId, profileUid });
@@ -46,9 +52,10 @@ export const ProfileVotePostResolvers = {
         await NotificationService.notifyVoteActivity(pvp, transactionalEntityManager);
 
         const scoreRecord = await ProfileScoreRecord.createQueryBuilder("record")
-                                                    .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
-                                                    .getCount();
-        
+          .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
+          .getCount();
+
+
         if (!scoreRecord) {
           let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.VOTED_POST, profileUid: context.user.uid, postId, value: ProfileScoreRecord.POINTS.VOTED_POST });
           await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);

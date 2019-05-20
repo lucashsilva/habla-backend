@@ -3,7 +3,6 @@ import { Post } from "../models/post";
 import { IsNull, Equal, Brackets, MoreThan } from "typeorm";
 import { InternalServerError } from "../errors/internal-server-error";
 import { NotFoundError } from "../errors/not-found-error";
-import { LocationError } from "../errors/location-error";
 import * as admin from 'firebase-admin';
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 import { requireLocationInfo } from "../util/context";
@@ -92,48 +91,41 @@ export const ProfileResolvers = {
       let photoURL;
       let location;
       if (args.updateHome) {
-        try {
-          requireLocationInfo(context);
-          location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
-        } catch (error) {
-          console.log(JSON.stringify(error));
-          throw new LocationError('Home could not be saved.');
-        }
+        requireLocationInfo(context);
+        location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
+
       }
 
       await getConnection().transaction(async transactionalEntityManager => {
         if (args.photo) {
           let photoData = getPhotoDataWithBufferFromBase64(args.photo, `${context.user.uid}-original`);
 
-          try {
-            let file = admin.storage().bucket().file(`profile-photos/${photoData.fileName}`);
 
-            await file.save(photoData.buffer, {
-              metadata: { contentType: photoData.mimeType },
-              validation: 'md5'
-            });
+          let file = admin.storage().bucket().file(`profile-photos/${photoData.fileName}`);
 
-            photoURL = (await file.getSignedUrl({
-              action: 'read',
-              expires: '03-09-2491'
-            }))[0];
-          } catch (error) {
-            console.log(JSON.stringify(error));
-            throw new InternalServerError('Profile picture could not be saved.');
-          }
+          await file.save(photoData.buffer, {
+            metadata: { contentType: photoData.mimeType },
+            validation: 'md5'
+          });
+
+          photoURL = (await file.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491'
+          }))[0];
+
         }
         await transactionalEntityManager.save(Profile, { ...args.profile, uid: context.user.uid, photoURL: photoURL, home: location });
       });
       return Profile.findOne(context.user.uid);
     },
     updateExpoPushToken: async (parent, args, context) => {
-        try {
-          await Profile.update({ uid: context.user.uid }, { expoPushToken: args.token });
-        } catch (error) {
-          console.log(error);
-          throw new InternalServerError("Error updating expo push token.");
-        }
-      return true;
+      try {
+        await Profile.update({ uid: context.user.uid }, { expoPushToken: args.token });
+        return true;
+      } catch (error) {
+        console.log(error);
+        throw new InternalServerError("Error updating expo push token.");
+      }
     }
   }
 };
