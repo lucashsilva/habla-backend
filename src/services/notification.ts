@@ -19,7 +19,7 @@ export class NotificationService {
 		await entityManager.insert(Notification, Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_OWNED_POST }));
 		
 		if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
-			body: `${sender.username} commented your post.`,
+			body: `${sender.username} commented your post`,
 			data: {
 				type: CommentNotificationType.COMMENT_ON_OWNED_POST,
 				postId: post.id
@@ -51,38 +51,35 @@ export class NotificationService {
 	static notifyThirdPartyComment = async (comment: Comment, entityManager: EntityManager) => {
 		const post = await entityManager.findOne(Post, comment.postId, { relations: ['owner'] });
 		const sender = await entityManager.findOne(Profile, comment.ownerUid);
+
 		const queryBuilder = await entityManager.createQueryBuilder(Profile, "p");
 
 		queryBuilder.select()
 					.where(`EXISTS${queryBuilder.subQuery()
 												.select()
 												.from(ProfileFollowPost, "pfp")
-												.where({ postId: Equal(post.id) })
-												.andWhere(`pfp."profileUid" = p.id`)
+												.where(`pfp."postId" = ${post.id}`)
+												.andWhere(`pfp."profileUid" = p.uid`)
+												.andWhere(`pfp."profileUid" != ${comment.ownerUid}`)
 												.getQuery()}`);
 		
-		console.log(queryBuilder.getSql());
 		const receiverProfiles = await queryBuilder.getMany();
 		const receiverPushTokens = receiverProfiles.filter(p => !!p.expoPushToken).map(p => p.expoPushToken);
 		const notifications = receiverProfiles.map(receiver => Notification.create({ comment, post, receiver, type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST }));
 
-		await entityManager.insert(Notification, notifications);
-		
-		let body = "";
-		if(post.anonymous){
-			body = `${sender.username} commented in a post that you follow`
-		}else{
-			body = `${sender.username} commented on ${post.owner.username}'s post`
-		}
+		if (receiverProfiles.length > 0) {
+			await entityManager.insert(Notification, notifications);
 
-		if (receiverPushTokens.length > 0) await NotificationService.sendExpoNotifications({
-			body: body,
+			if (receiverPushTokens.length > 0) await NotificationService.sendExpoNotifications({
+				body: post.anonymous? `${sender.username} commented on a post that you follow`: `${sender.username} commented on ${post.owner.username}'s post`,
 				data: {
 					type: CommentNotificationType.COMMENT_ON_THIRD_PARTY_POST,
 					postId: post.id
 				}
 			}, receiverPushTokens);
-	
+		}
+
+		console.log('foi')
 	}
 
 	private static sendExpoNotifications = async(message: NotificationMessage, tokens: string[]) => {

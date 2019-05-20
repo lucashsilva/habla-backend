@@ -2,6 +2,7 @@ import { ProfileFollowPost } from "../models/profile-follow-post";
 import { getConnection } from "typeorm";
 import { Post } from "../models/post";
 import { InvalidOperationError } from "../errors/invalid-operator-error";
+import { NotFoundError } from "../errors/not-found-error";
 
 export const ProfileFollowPostTypeDef = `
   extend type Query {
@@ -9,8 +10,7 @@ export const ProfileFollowPostTypeDef = `
   }
 
   extend type Mutation {
-    follow(postId: ID!): ProfileFollowPost!
-    unfollow(postId: ID!): Boolean!
+    togglePostFollow(postId: ID!): ProfileFollowPost
   }
 
   type ProfileFollowPost {
@@ -32,35 +32,32 @@ export const ProfileFollowPostResolvers = {
     }
   },
   Mutation:{
-    follow: async(parent, args, context) => {
+    togglePostFollow: async(parent, args, context) => {
       const { postId } = args;
 
       let post = await Post.findOne({id: postId});
 
+      if (!post) {
+        throw new NotFoundError("Post not found.");
+      }
+
       if (post.ownerUid !== context.user.uid) {
         const profileUid = context.user.uid;
         
-        const pfp = await ProfileFollowPost.create({postId, profileUid});
-        await ProfileFollowPost.save(pfp);
-        
-        return pfp;
-      } else{
-        throw new InvalidOperationError();
+        let pfp = await ProfileFollowPost.findOne({ postId, profileUid });
+
+        if (pfp) {
+          await pfp.remove();
+
+          return;
+        } else {
+          pfp = await ProfileFollowPost.create({ postId, profileUid }).save();
+
+          return pfp;
+        }
+      } else {
+        throw new InvalidOperationError("You can not subscribe to a post owned by yourself.");
       }
-    },
-
-    unfollow: async(parent, args, context) => {
-      const { postId  } = args;
-
-      const profileUid = context.user.uid;
-      let pfp = await ProfileFollowPost.findOne({postId, profileUid});
-
-      if (pfp) {
-        await ProfileFollowPost.delete({postId, profileUid});
-        return true;
-      }
-
-      return false;
     }
   }
 
