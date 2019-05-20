@@ -121,11 +121,11 @@ export const ProfileResolvers = {
     updateExpoPushToken: async (parent, args, context) => {
       try {
         await Profile.update({ uid: context.user.uid }, { expoPushToken: args.token });
+        return true;
       } catch (error) {
         console.log(error);
         throw new InternalServerError("Error updating expo push token.");
       }
-      return true;
     }
   }
 };
