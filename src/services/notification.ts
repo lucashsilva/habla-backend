@@ -78,8 +78,6 @@ export class NotificationService {
 				}
 			}, receiverPushTokens);
 		}
-
-		console.log('foi')
 	}
 
 	private static sendExpoNotifications = async(message: NotificationMessage, tokens: string[]) => {

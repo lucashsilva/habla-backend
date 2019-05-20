@@ -48,6 +48,7 @@ export const PostTypeDef = `
     profilePostVote: PostVote
     photoURL: String
     postFollowers: [Profile!]!
+    profileFollowPost: ProfileFollowPost
   }
 `;
 
@@ -112,6 +113,9 @@ export const PostResolvers = {
         .of(post)
         .loadMany();
     },
+    profileFollowPost:async (post: Post, args, context) => {
+      return await ProfileFollowPost.findOne({ postId: post.id, profileUid: context.user.uid });
+    }
   },
   Mutation: {
     createPost: async (parent, args, context) => {
