@@ -20,6 +20,7 @@ import { ProfileScoreRecord } from './models/profile-score-record';
 import { PostMapChannel } from './models/post-map-channel';
 import HablaErrorCodes from './errors/error-codes'
 import { InternalServerError } from './errors/internal-server-error'
+import { ProfileFollowPost } from './models/profile-follow-post';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -92,7 +93,8 @@ createConnection({
         ProfileVotePost,
         Notification,
         ProfileScoreRecord,
-        PostMapChannel
+        PostMapChannel,
+        ProfileFollowPost
     ]
 }).then(() => {
     httpServer.listen(PORT);

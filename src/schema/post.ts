@@ -15,6 +15,7 @@ import { InsufficentScoreError } from "../errors/insufficent_score_error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { PostMapChannel } from "../models/post-map-channel";
 import { getConnection } from "typeorm";
+import { ProfileFollowPost } from "../models/profile-follow-post";
 
 export const PostTypeDef = `
   extend type Query {
@@ -46,6 +47,7 @@ export const PostTypeDef = `
     voteCount: Int!
     profilePostVote: PostVote
     photoURL: String
+    profileFollowPost: ProfileFollowPost
   }
 `;
 
@@ -63,6 +65,7 @@ export const PostResolvers = {
       query.andWhere(`post.deletedAt IS NULL and ST_DWithin(post.location::geography, ST_GeomFromText('POINT(${context.location.latitude} ${context.location.longitude})', 4326)::geography, ${args.radius || 10000})`);
 
       args.channelId && query.andWhere(qb => `EXISTS${qb.subQuery()
+        .select()
         .from(PostMapChannel, "pmc")
         .where(`post.id = pmc.postId AND pmc."channelId" = ${args.channelId}`)
         .getQuery()}`);
@@ -102,6 +105,9 @@ export const PostResolvers = {
     },
     profilePostVote: async (post: Post, args, context) => {
       return await ProfileVotePost.findOne({ postId: post.id, profileUid: context.user.uid });
+    },
+    profileFollowPost:async (post: Post, args, context) => {
+      return await ProfileFollowPost.findOne({ postId: post.id, profileUid: context.user.uid });
     }
   },
   Mutation: {

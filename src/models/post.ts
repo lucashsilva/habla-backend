@@ -4,6 +4,8 @@ import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ProfileVotePost } from "./profile-vote-post";
 import { Notification } from "./notification";
+import { ProfileFollowPost } from "./profile-follow-post";
+
 
 @Entity()
 export class Post extends BaseEntity {
@@ -54,4 +56,8 @@ export class Post extends BaseEntity {
 
     @Column({ nullable: true })
     photoURL: string;
+
+    @ManyToMany(type => Profile, { cascade: ['insert'] })
+    @JoinTable({ name: 'profile_follow_post' })
+    postFollowers: Profile[];
 }
