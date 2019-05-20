@@ -1,4 +1,5 @@
-import { Entity, BaseEntity, PrimaryColumn } from "typeorm";
+import { Entity, BaseEntity, PrimaryColumn, ManyToOne } from "typeorm";
+import { Profile } from "./profile";
 
 @Entity()
 export class ProfileFollowPost extends BaseEntity {
@@ -7,4 +8,7 @@ export class ProfileFollowPost extends BaseEntity {
 
     @PrimaryColumn()
     profileUid: string;
+
+    @ManyToOne(type => Profile)
+    profile: Profile;
 }
