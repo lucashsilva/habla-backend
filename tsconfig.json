@@ -9,6 +9,9 @@
         "types": ["reflect-metadata", "node"],
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
+        "lib": [
+           "es2016"
+        ]
     },
     "include": [
         "src/**/*.ts"
