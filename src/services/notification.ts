@@ -42,7 +42,7 @@ export class NotificationService {
 		if (receiver.expoPushToken) await NotificationService.sendExpoNotifications({
 			body: `${voteCount} people voted on your post.`,
 			data: {
-				type: VoteNotificationType,
+				type: VoteNotificationType.VOTE_ON_OWNED_POST,
 				postId: post.id
 			}
 		}, [receiver.expoPushToken]);
