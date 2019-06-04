@@ -62,11 +62,13 @@ const server = new ApolloServer({
         return { location, user };
     },
     formatError: (err) => {
+        console.log(err);
         let codes = Object.keys(HablaErrorCodes).filter(key => (HablaErrorCodes[key]));
-        if (!codes.includes(err.extensions.code)){
-            throw new InternalServerError()
-        } else {
+        
+        if (codes.includes(err.extensions.code) || err.extensions.code.startsWith("GRAPHQL")){
             return { code: err.extensions.code, message: err.message };
+        } else {
+            throw new InternalServerError();
         }
           
         
