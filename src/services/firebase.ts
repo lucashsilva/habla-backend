@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
-import { AuthenticationError } from '../errors/authentication-error';
+import HablaErrorCodes from '../errors/error-codes';
+import { HablaError } from '../errors/habla-error';
 var serviceAccount = require("/secrets/firebase/service-account.json");
 
 admin.initializeApp({
@@ -16,13 +17,13 @@ const getUserFromToken = async(token: string) => {
         
         return user;
     } catch (error) {
-        throw new AuthenticationError('Invalid token.');
+        throw new HablaError('Invalid token.', HablaErrorCodes.AUTHENTICATION_ERROR);
     }
 }
 
 const requireAuthentication = async(req) => {
     if (!req.headers['authorization']) {
-        throw new AuthenticationError(`Missing 'Authorization' header.`);
+        throw new HablaError(`Missing 'Authorization' header.`, HablaErrorCodes.AUTHENTICATION_ERROR);
     }
 
     let user = await getUserFromToken(req.headers['authorization']);

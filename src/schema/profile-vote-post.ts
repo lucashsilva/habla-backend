@@ -4,8 +4,9 @@ import { Profile } from "../models/profile";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { Equal } from "typeorm";
 import { getConnection } from "typeorm";
-import { NotFoundError } from "../errors/not-found-error";
 import { NotificationService } from "../services/notification";
+import { HablaError } from "../errors/habla-error";
+import HablaErrorCodes from "../errors/error-codes";
 
 
 export const ProfileVotePostTypeDef = `
@@ -39,7 +40,7 @@ export const ProfileVotePostResolvers = {
       const { postId, type } = args;
 
       if (!await Post.count({ id: args.postId })) {
-        throw new NotFoundError("Invalid post id.");
+        throw new HablaError("No post with the provided id was not found.", HablaErrorCodes.NOT_FOUND_ERROR);
       }
 
       const profileUid = context.user.uid;

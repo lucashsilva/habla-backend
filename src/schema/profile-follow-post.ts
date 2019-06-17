@@ -1,8 +1,7 @@
 import { ProfileFollowPost } from "../models/profile-follow-post";
-import { getConnection } from "typeorm";
 import { Post } from "../models/post";
-import { InvalidOperationError } from "../errors/invalid-operator-error";
-import { NotFoundError } from "../errors/not-found-error";
+import { HablaError } from "../errors/habla-error";
+import HablaErrorCodes from "../errors/error-codes";
 
 export const ProfileFollowPostTypeDef = `
   extend type Query {
@@ -38,7 +37,7 @@ export const ProfileFollowPostResolvers = {
       let post = await Post.findOne({id: postId});
 
       if (!post) {
-        throw new NotFoundError("Post not found.");
+        throw new HablaError("Post not found.", HablaErrorCodes.NOT_FOUND_ERROR);
       }
 
       if (post.ownerUid !== context.user.uid) {
@@ -56,7 +55,7 @@ export const ProfileFollowPostResolvers = {
           return pfp;
         }
       } else {
-        throw new InvalidOperationError("You can not subscribe to a post owned by yourself.");
+        throw new HablaError("You can not subscribe to a post owned by yourself.", HablaErrorCodes.INVALID_OPERATION_ERROR);
       }
     }
   }

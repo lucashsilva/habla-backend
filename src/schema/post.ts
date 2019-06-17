@@ -6,16 +6,15 @@ import { getMaskedDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { IsNull, Not, In, Equal } from "typeorm";
 import { requireLocationInfo } from "../util/context";
-import { NotFoundError } from "../errors/not-found-error";
-import { AuthorizationError } from "../errors/authorization-error";
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 import * as admin from 'firebase-admin';
-import { InternalServerError } from "../errors/internal-server-error";
-import { InsufficentScoreError } from "../errors/insufficent_score_error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { PostMapChannel } from "../models/post-map-channel";
 import { getConnection } from "typeorm";
 import { ProfileFollowPost } from "../models/profile-follow-post";
+import { Notification } from "../models/notification";
+import HablaErrorCodes from "../errors/error-codes";
+import { HablaError } from "../errors/habla-error";
 
 export const PostTypeDef = `
   extend type Query {
@@ -133,7 +132,7 @@ export const PostResolvers = {
 
         let score = result.scoreBalance;
         if (score < 20) {
-          throw new InsufficentScoreError('Insufficient score to make an anonymous post.')
+          throw new HablaError('Insufficient score to make an anonymous post.', HablaErrorCodes.USERNAME_ALREADY_TAKEN);
         }
       }
 
@@ -165,7 +164,7 @@ export const PostResolvers = {
             }))[0];
           } catch (error) {
             console.log(JSON.stringify(error));
-            throw new InternalServerError('Post picture could not be saved.');
+            throw new HablaError('Post picture could not be saved.', HablaErrorCodes.INTERNAL_SERVER_ERROR);
           }
         }
 
@@ -205,12 +204,14 @@ export const PostResolvers = {
     deletePost: async (parent, args, context) => {
       let post = await Post.findOne(args.postId);
       if (!post) {
-        throw new NotFoundError();
+        throw new HablaError("Post not found.", HablaErrorCodes.NOT_FOUND_ERROR)
       } else if (post.ownerUid !== context.user.uid) {
-        throw new AuthorizationError();
+        throw new HablaError("User is not authorized to make changes to this resource.", HablaErrorCodes.AUTHORIZATION_ERROR);
       } else {
         post.deletedAt = new Date(Date.now());
+
         await post.save();
+        await Notification.delete({ post });
         return true;
       }
     }

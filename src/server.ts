@@ -19,8 +19,8 @@ import { Notification } from './models/notification';
 import { ProfileScoreRecord } from './models/profile-score-record';
 import { PostMapChannel } from './models/post-map-channel';
 import HablaErrorCodes from './errors/error-codes'
-import { InternalServerError } from './errors/internal-server-error'
 import { ProfileFollowPost } from './models/profile-follow-post';
+import { HablaError } from './errors/habla-error';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -68,10 +68,8 @@ const server = new ApolloServer({
         if (codes.includes(err.extensions.code) || err.extensions.code.startsWith("GRAPHQL")){
             return { code: err.extensions.code, message: err.message };
         } else {
-            throw new InternalServerError();
+            return { code: HablaErrorCodes.INTERNAL_SERVER_ERROR, message: "Internal server error." };
         }
-          
-        
     }
 });
 

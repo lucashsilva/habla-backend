@@ -1,5 +1,6 @@
 import { Notification, CommentNotificationType, VoteNotificationType } from "../models/notification";
 import { Comment } from "../models/comment";
+import { IsNull } from "typeorm";
 
 export const NotificationTypeDef = `
   extend type Query {
@@ -29,7 +30,7 @@ export const NotificationTypeDef = `
 export const NotificationResolvers = {
   Query: {
     notifications: async(parent, args, context) => {
-      return await Notification.find({ where: { receiver: { uid: context.user.uid }}, order: { updatedAt: 'DESC' }, relations: ['post', 'comment']});
+      return await Notification.find({ where: { receiver: { uid: context.user.uid }, deletedAt: IsNull() }, order: { updatedAt: 'DESC' }, relations: ['post', 'comment']});
     }
   },
   Notification: {

@@ -5,10 +5,10 @@ import { requireLocationInfo } from "../util/context";
 import { getConnection } from "typeorm";
 import { Post } from "../models/post";
 import { NotificationService } from "../services/notification";
-import { NotFoundError } from "../errors/not-found-error";
 import { ProfileScoreRecord, ProfileScoreRecordType } from "../models/profile-score-record";
 import { ProfileFollowPost } from "../models/profile-follow-post";
-import { ProfileFollowPostResolvers } from "./profile-follow-post";
+import HablaErrorCodes from "../errors/error-codes";
+import { HablaError } from "../errors/habla-error";
 
 export const CommentTypeDef = `
   type Comment {
@@ -38,7 +38,7 @@ export const CommentResolvers = {
       let comment = args.comment;
 
       if (!await Post.count({ id: args.postId })) {
-        throw new NotFoundError("Invalid post id.");
+        throw new HablaError("No post with the provided id was not found.", HablaErrorCodes.NOT_FOUND_ERROR);
       }
 
       comment.postId = args.postId;
