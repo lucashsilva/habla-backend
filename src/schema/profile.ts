@@ -1,6 +1,6 @@
 import { Profile } from "../models/profile";
 import { Post } from "../models/post";
-import { IsNull, Equal, MoreThan } from "typeorm";
+import { IsNull, Equal, MoreThan, Not } from "typeorm";
 import * as admin from 'firebase-admin';
 import { getPhotoDataWithBufferFromBase64 } from "../util/photo-upload-handler";
 import { requireLocationInfo } from "../util/context";
@@ -96,7 +96,7 @@ export const ProfileResolvers = {
         location = context.location ? { type: "Point", coordinates: [context.location.latitude, context.location.longitude] } : null;
       }
 
-      if (await Profile.count({ username: args.profile.username })) {
+      if (await Profile.count({ where: { username: args.profile.username, uid: Not(context.user.uid) }})) {
         throw new HablaError("Username is already taken.", HablaErrorCodes.USERNAME_ALREADY_TAKEN);
       }
 
