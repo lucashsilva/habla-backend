@@ -77,8 +77,8 @@ export const PostResolvers = {
     }
   },
   Post: {
-    owner: async (post: Post) => {
-      return !post.anonymous ? Profile.findOne(post.ownerUid) : null;
+    owner: async (post: Post, args, context) => {
+      return !post.anonymous || post.ownerUid == context.user.uid? Profile.findOne(post.ownerUid) : null;
     },
     comments: async (post: Post) => {
       return await Comment.find({ where: { post: post }, order: { createdAt: 'DESC' } });
