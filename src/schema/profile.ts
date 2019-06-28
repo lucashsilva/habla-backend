@@ -58,7 +58,7 @@ export const ProfileResolvers = {
       if (profile) {
         return profile;
       } else {
-        throw new HablaError('No profile with the provided id was not found.', HablaErrorCodes.NOT_FOUND_ERROR);
+        throw new HablaError('No profile with the provided id was found.', HablaErrorCodes.NOT_FOUND_ERROR);
       }
     }
   },
