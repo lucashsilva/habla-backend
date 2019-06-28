@@ -64,8 +64,9 @@ export const ProfileResolvers = {
   },
   Profile: {
     posts: (profile: Profile) => {
-      return Post.find({ where: { owner: profile, deletedAt: IsNull() } });
+      return Post.find({ where: { owner: profile, deletedAt: IsNull() }, order: { createdAt: 'DESC' } });
     },
+    
     home: (profile: Profile) => {
       return profile.home && profile.home.coordinates;
     },
