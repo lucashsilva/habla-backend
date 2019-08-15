@@ -20,7 +20,6 @@ import { ProfileScoreRecord } from './models/profile-score-record';
 import { PostMapChannel } from './models/post-map-channel';
 import HablaErrorCodes from './errors/error-codes'
 import { ProfileFollowPost } from './models/profile-follow-post';
-import { HablaError } from './errors/habla-error';
 
 const accessLogStream = fs.createWriteStream(path.join(__dirname + '/static', '/access.log'), { flags: 'a' });
 const logger = morgan('combined', { stream: accessLogStream });
@@ -46,6 +45,8 @@ app.use(cors({
     origin: '*',
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
+
+app.use(express.static('./src/static'));
 
 const server = new ApolloServer({ 
     typeDefs: AppSchema.typeDefs, 
