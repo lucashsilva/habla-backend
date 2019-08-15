@@ -8,6 +8,7 @@ import { ProfileScoreRecord } from "../models/profile-score-record";
 import { getConnection } from "typeorm";
 import { HablaError } from "../errors/habla-error";
 import HablaErrorCodes from "../errors/error-codes";
+import { isNull } from "util";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -63,8 +64,14 @@ export const ProfileResolvers = {
     }
   },
   Profile: {
-    posts: (profile: Profile) => {
-      return Post.find({ where: { owner: profile, deletedAt: IsNull() }, order: { createdAt: 'DESC' } });
+    posts: async (profile: Profile, args, context) => {
+      return await Post.createQueryBuilder()
+        .where({owner: profile, deletedAt : IsNull()})
+        .orderBy(`"createdAt"`, "DESC")
+        .andWhere(`anonymous = false or (anonymous = true and owner.uid = ${context.user.uid})`)
+        .getMany();
+
+      //return await Post.find({ where: { owner: profile, deletedAt: IsNull() }, order: { createdAt: 'DESC' } })
     },
     
     home: (profile: Profile) => {
