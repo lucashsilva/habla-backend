@@ -68,11 +68,9 @@ export const ProfileResolvers = {
       return await Post.createQueryBuilder()
         .where({owner: profile, deletedAt : IsNull()})
         .orderBy(`"createdAt"`, "DESC")
-        .andWhere(`anonymous = false or (anonymous = true and owner.uid = ${context.user.uid})`)
+        .andWhere(`anonymous = false or (anonymous = true and '${profile.uid}' = '${context.user.uid}')`)
         .getMany();
-
-      //return await Post.find({ where: { owner: profile, deletedAt: IsNull() }, order: { createdAt: 'DESC' } })
-    },
+      },
     
     home: (profile: Profile) => {
       return profile.home && profile.home.coordinates;
