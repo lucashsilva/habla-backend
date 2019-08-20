@@ -66,12 +66,11 @@ export const ProfileResolvers = {
   Profile: {
     posts: async (profile: Profile, args, context) => {
       return await Post.createQueryBuilder()
-        .where({owner: profile, deletedAt : IsNull()})
-        .orderBy(`"createdAt"`, "DESC")
-        .andWhere(`anonymous = false or (anonymous = true and '${profile.uid}' = '${context.user.uid}')`)
-        .getMany();
-      },
-    
+                        .where({owner: profile, deletedAt : IsNull()})
+                        .orderBy(`"createdAt"`, "DESC")
+                        .andWhere(`(anonymous = false or (anonymous = true and '${profile.uid}' = '${context.user.uid}'))`)
+                        .getMany();
+    },
     home: (profile: Profile) => {
       return profile.home && profile.home.coordinates;
     },
