@@ -21,7 +21,7 @@ export const ProfileFollowPostTypeDef = `
 export const ProfileFollowPostResolvers = {
   Query: {
     profileFollowsPost: async (parent, args, context) => {
-      let profileFollowPost = await ProfileFollowPost.findOne(args.postId, context.user.id);
+      let profileFollowPost = await ProfileFollowPost.findOne({ postId: args.postId, profileUid: context.user.uid });
 
       if (profileFollowPost) {
         return true;

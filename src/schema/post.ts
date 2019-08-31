@@ -2,7 +2,7 @@ import { Post } from "../models/post";
 import { Profile } from "../models/profile";
 import { Comment } from "../models/comment";
 import { Channel } from "../models/channel";
-import { getMaskedDistance } from "../util/geo";
+import { getMaskedDistance, getExactDistance } from "../util/geo";
 import { ProfileVotePost } from "../models/profile-vote-post";
 import { IsNull, Not, In, Equal } from "typeorm";
 import { requireLocationInfo } from "../util/context";
@@ -15,6 +15,7 @@ import { ProfileFollowPost } from "../models/profile-follow-post";
 import { Notification } from "../models/notification";
 import HablaErrorCodes from "../errors/error-codes";
 import { HablaError } from "../errors/habla-error";
+import { ProfileRevealPost } from "../models/profile-reveal-post";
 
 export const PostTypeDef = `
   extend type Query {
@@ -36,6 +37,7 @@ export const PostTypeDef = `
     id: ID!
     body: String!
     distance: String!
+    exactDistance: Float
     createdAt: Date!
     anonymous: Boolean!
     owner: Profile
@@ -48,6 +50,7 @@ export const PostTypeDef = `
     photoURL: String
     postFollowers: [Profile!]!
     profileFollowPost: ProfileFollowPost
+    profileRevealPosts: [ProfileRevealPost!]!
   }
 `;
 
@@ -94,6 +97,9 @@ export const PostResolvers = {
 
       return getMaskedDistance({ latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
     },
+    exactDistance: async(post, args, context) => {
+      return post.ownerUid === context.user.uid || (await ProfileRevealPost.count({ postId: post.id, profileUid: context.user.uid, type: "EXACT_DISTANCE" }))? getExactDistance(context.location, { latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }): null;
+    },
     commentsCount: async (post: Post) => {
       return await Comment.count({ post: post });
     },
@@ -112,8 +118,14 @@ export const PostResolvers = {
         .of(post)
         .loadMany();
     },
-    profileFollowPost:async (post: Post, args, context) => {
+    profileFollowPost: async (post: Post, args, context) => {
       return await ProfileFollowPost.findOne({ postId: post.id, profileUid: context.user.uid });
+    },
+    profileRevealPosts: async(post: Post, args, context) => {
+      return await ProfileRevealPost.createQueryBuilder()
+        .select()
+        .where({ postId: post.id, profileUid: context.user.uid })
+        .getMany();
     }
   },
   Mutation: {
@@ -131,8 +143,9 @@ export const PostResolvers = {
           .getRawOne();
 
         let score = result.scoreBalance;
-        if (score < 20) {
-          throw new HablaError('Insufficient score to make an anonymous post.', HablaErrorCodes.USERNAME_ALREADY_TAKEN);
+        
+        if (score < Math.abs(ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST)) {
+          throw new HablaError('Insufficient score to make an anonymous post.', HablaErrorCodes.INSUFFICENT_SCORE_ERROR);
         }
       }
 

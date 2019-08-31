@@ -21,3 +21,7 @@ export const getMaskedDistance = (a: Location, b: Location) => {
         return "very_far";
     }
 }
+
+export const getExactDistance = (a: Location, b: Location) => {
+    return geo.getDistanceSimple(a, b);
+}
