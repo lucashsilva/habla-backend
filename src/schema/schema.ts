@@ -6,6 +6,7 @@ import { ChannelTypeDef, ChannelResolvers } from "./channel";
 import { ProfileVotePostTypeDef, ProfileVotePostResolvers } from "./profile-vote-post";
 import { NotificationTypeDef, NotificationResolvers } from "./notification";
 import { ProfileFollowPostTypeDef, ProfileFollowPostResolvers } from "./profile-follow-post"
+import { ProfileRevealPostResolvers, ProfileRevealPostTypeDef } from "./profile-reveal-post";
 
 const Query = `
     scalar Date
@@ -21,8 +22,8 @@ const Mutation = `
     }
 `
 
-const typeDefs = [Query, Mutation, PostTypeDef, ProfileTypeDef, CommentTypeDef, ChannelTypeDef, ProfileVotePostTypeDef, NotificationTypeDef, ProfileFollowPostTypeDef];
-const resolvers = merge(PostResolvers, ProfileResolvers, CommentResolvers, ChannelResolvers, ProfileVotePostResolvers, NotificationResolvers, ProfileFollowPostResolvers);
+const typeDefs = [Query, Mutation, PostTypeDef, ProfileTypeDef, CommentTypeDef, ChannelTypeDef, ProfileVotePostTypeDef, NotificationTypeDef, ProfileFollowPostTypeDef, ProfileRevealPostTypeDef];
+const resolvers = merge(PostResolvers, ProfileResolvers, CommentResolvers, ChannelResolvers, ProfileVotePostResolvers, NotificationResolvers, ProfileFollowPostResolvers, ProfileRevealPostResolvers);
 
 export const AppSchema = {
     typeDefs,
