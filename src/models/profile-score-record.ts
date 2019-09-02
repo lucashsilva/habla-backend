@@ -35,7 +35,8 @@ export class ProfileScoreRecord extends BaseEntity {
         CREATED_PUBLIC_POST: 3,
         CREATED_ANONYMOUS_POST: -20,
         COMMENTED_POST: 2,
-        VOTED_POST: 1
+        VOTED_POST: 1,
+        REVEAL_EXACT_DISTANCE: -10
     }
 }
 
@@ -43,5 +44,6 @@ export enum ProfileScoreRecordType {
     CREATED_PUBLIC_POST = 'CREATED_PUBLIC_POST', 
     CREATED_ANONYMOUS_POST = 'CREATED_ANONYMOUS_POST', 
     COMMENTED_POST = 'COMMENTED_POST', 
-    VOTED_POST = 'VOTED_POST'
+    VOTED_POST = 'VOTED_POST',
+    REVEAL_EXACT_DISTANCE = 'REVEAL_EXACT_DISTANCE'
 }

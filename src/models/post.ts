@@ -4,7 +4,7 @@ import { Profile } from "./profile";
 import { Comment } from "./comment";
 import { ProfileVotePost } from "./profile-vote-post";
 import { Notification } from "./notification";
-import { ProfileFollowPost } from "./profile-follow-post";
+import { ProfileRevealPost } from "./profile-reveal-post";
 
 
 @Entity()
@@ -38,6 +38,9 @@ export class Post extends BaseEntity {
 
     @OneToMany(type => ProfileVotePost, pvp => pvp.post)
     profileVotePosts: ProfileVotePost[];
+
+    @OneToMany(type => ProfileRevealPost, prp => prp.post)
+    profileRevealPosts: ProfileRevealPost[];
 
     @OneToMany(type => Notification, notification => notification.post)
     notifications: Notification[];
