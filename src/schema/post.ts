@@ -98,6 +98,8 @@ export const PostResolvers = {
       return getMaskedDistance({ latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }, { latitude: context.location.latitude, longitude: context.location.longitude });
     },
     exactDistance: async(post, args, context) => {
+      requireLocationInfo(context);
+      
       return post.ownerUid === context.user.uid || (await ProfileRevealPost.count({ postId: post.id, profileUid: context.user.uid, type: "EXACT_DISTANCE" }))? getExactDistance(context.location, { latitude: post.location.coordinates[0], longitude: post.location.coordinates[1] }): null;
     },
     commentsCount: async (post: Post) => {

@@ -34,7 +34,7 @@ export const ProfileRevealPostResolvers = {
   },
   ProfileRevealPost: {
     post: async (parent: ProfileRevealPost, args, context) => {
-      return Post.findOne({ id: parent.postId });
+      return Post.findOne(parent.postId);
     }
   },
   Mutation:{
