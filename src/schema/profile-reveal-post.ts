@@ -16,6 +16,7 @@ export const ProfileRevealPostTypeDef = `
 
   type ProfileRevealPost {
     postId: ID!
+    post: Post!
     profileUid: String!
     type: ProfileRevealPostType!
   }
@@ -29,6 +30,11 @@ export const ProfileRevealPostResolvers = {
   Query: {
     profileRevealPosts: async (parent, args, context) => {
       return ProfileRevealPost.find(args);
+    }
+  },
+  ProfileRevealPost: {
+    post: async (parent: ProfileRevealPost, args, context) => {
+      return Post.findOne(parent.postId);
     }
   },
   Mutation:{
