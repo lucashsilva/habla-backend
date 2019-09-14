@@ -66,9 +66,11 @@ export const CommentResolvers = {
           }
         }
 
-        let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.COMMENTED_POST, profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST })
-        
-        await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
+        let profile = await Profile.findOne({uid: comment.ownerUid});
+        if(!profile.premium){
+          let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.COMMENTED_POST, profileUid: context.user.uid, comment, value: ProfileScoreRecord.POINTS.COMMENTED_POST })
+          await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
+        }
 
         await NotificationService.notifyNewComment(comment, transactionalEntityManager);
 

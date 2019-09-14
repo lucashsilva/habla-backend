@@ -22,6 +22,7 @@ export const ProfileTypeDef = `
     website: String
     phone: String
     gender: Gender
+    premium: Boolean
   }
 
   extend type Mutation {
@@ -42,6 +43,7 @@ export const ProfileTypeDef = `
     home: [Float]
     score: Int!
     scoreBalance: Int!
+    premium: Boolean!
   }
 
   enum Gender {
