@@ -8,7 +8,6 @@ import { ProfileScoreRecord } from "../models/profile-score-record";
 import { getConnection } from "typeorm";
 import { HablaError } from "../errors/habla-error";
 import HablaErrorCodes from "../errors/error-codes";
-import { isNull } from "util";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -42,6 +41,7 @@ export const ProfileTypeDef = `
     home: [Float]
     score: Int!
     scoreBalance: Int!
+    premium: Boolean!
   }
 
   enum Gender {

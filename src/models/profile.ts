@@ -55,4 +55,7 @@ export class Profile extends BaseEntity {
 
     @OneToMany(type => Notification, notification => notification.receiver, { onDelete: 'CASCADE' })
     notifications: Notification[];
+
+    @Column({ default: false })
+    premium: boolean;
 }

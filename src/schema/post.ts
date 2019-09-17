@@ -138,16 +138,19 @@ export const PostResolvers = {
 
       post.ownerUid = context.user.uid;
 
-      if (post.anonymous) {
-        const result = await ProfileScoreRecord.createQueryBuilder("record")
-          .select("SUM(value)", "scoreBalance")
-          .where({ profileUid: Equal(context.user.uid) })
-          .getRawOne();
+      let profile = await Profile.findOne({uid: post.ownerUid});
+      if(!profile.premium){
+        if (post.anonymous) {
+          const result = await ProfileScoreRecord.createQueryBuilder("record")
+            .select("SUM(value)", "scoreBalance")
+            .where({ profileUid: Equal(context.user.uid) })
+            .getRawOne();
 
-        let score = result.scoreBalance;
+          let score = result.scoreBalance;
         
-        if (score < Math.abs(ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST)) {
-          throw new HablaError('Insufficient score to make an anonymous post.', HablaErrorCodes.INSUFFICENT_SCORE_ERROR);
+          if (score < Math.abs(ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST)) {
+            throw new HablaError('Insufficient score to make an anonymous post.', HablaErrorCodes.INSUFFICENT_SCORE_ERROR);
+          }
         }
       }
 
@@ -204,15 +207,15 @@ export const PostResolvers = {
         post = await transactionalEntityManager.save(Post, post);
 
         let profileScoreRecord = null;
-
-        if (!post.anonymous) {
-          profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST });
-        } else {
-          profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST });
+        
+        if(!profile.premium){
+          if (!post.anonymous) {
+            profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_PUBLIC_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_PUBLIC_POST });
+          } else {
+            profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.CREATED_ANONYMOUS_POST, profileUid: context.user.uid, post, value: ProfileScoreRecord.POINTS.CREATED_ANONYMOUS_POST });
+          }
+          await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
         }
-
-        await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
-
       });
       return post;
     },

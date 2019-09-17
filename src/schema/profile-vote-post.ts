@@ -47,21 +47,25 @@ export const ProfileVotePostResolvers = {
       const pvp = await ProfileVotePost.findOne({ postId, profileUid }) || ProfileVotePost.create({ postId, profileUid });
       pvp.type = type;
 
+      let profile = await Profile.findOne({ uid: profileUid });
+
       await getConnection().transaction(async transactionalEntityManager => {
         await transactionalEntityManager.save(pvp);
 
         await NotificationService.notifyVoteActivity(pvp, transactionalEntityManager);
 
-        const scoreRecord = await ProfileScoreRecord.createQueryBuilder("record")
-          .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
-          .getCount();
+        if (!profile.premium) {
+          const scoreRecord = await ProfileScoreRecord.createQueryBuilder("record")
+            .where({ profileUid: Equal(context.user.uid), postId: Equal(postId), type: Equal(ProfileScoreRecordType.VOTED_POST) })
+            .getCount();
 
 
-        if (!scoreRecord) {
-          let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.VOTED_POST, profileUid: context.user.uid, postId, value: ProfileScoreRecord.POINTS.VOTED_POST });
-          await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
+          if (!scoreRecord) {
+            let profileScoreRecord = await ProfileScoreRecord.create({ type: ProfileScoreRecordType.VOTED_POST, profileUid: context.user.uid, postId, value: ProfileScoreRecord.POINTS.VOTED_POST });
+            await transactionalEntityManager.save(ProfileScoreRecord, profileScoreRecord);
+          }
         }
-      });
+    });
 
       return pvp;
     }
