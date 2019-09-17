@@ -8,7 +8,6 @@ import { ProfileScoreRecord } from "../models/profile-score-record";
 import { getConnection } from "typeorm";
 import { HablaError } from "../errors/habla-error";
 import HablaErrorCodes from "../errors/error-codes";
-import { isNull } from "util";
 
 export const ProfileTypeDef = `
   extend type Query {
@@ -22,7 +21,6 @@ export const ProfileTypeDef = `
     website: String
     phone: String
     gender: Gender
-    premium: Boolean
   }
 
   extend type Mutation {
